@@ -6,10 +6,11 @@ import {
   StyleSheet,
   ActivityIndicator,
   Pressable,
+  Alert,
 } from 'react-native';
 import { useTheme } from '@car-rental/tokens';
 import type { BookingDTO, BookingStatus } from '@car-rental/types';
-import { listBookings } from '@/api/client';
+import { listBookings, returnVehicle } from '@/api/client';
 import { i18n } from '@/i18n';
 
 // Status pill colours — mapped via theme tokens, no raw hex
@@ -30,9 +31,11 @@ type BookingCardProps = {
   item: BookingDTO;
   theme: ReturnType<typeof useTheme>;
   onPay?: (booking: BookingDTO) => void;
+  onPickup?: (booking: BookingDTO) => void;
+  onReturn?: (booking: BookingDTO) => void;
 };
 
-function BookingCard({ item, theme, onPay }: BookingCardProps) {
+function BookingCard({ item, theme, onPay, onPickup, onReturn }: BookingCardProps) {
   const { bg, fg } = statusStyle(item.status, theme);
   const currency = item.currency;
   const isRtl = i18n.locale === 'ar';
@@ -43,6 +46,8 @@ function BookingCard({ item, theme, onPay }: BookingCardProps) {
   }).format(item.totalAmount);
 
   const canPay = item.status === 'reserved' && !item.payment;
+  const canPickup = item.status === 'vehicle-prepared';
+  const canReturn = item.status === 'picked-up';
 
   return (
     <View
@@ -135,6 +140,62 @@ function BookingCard({ item, theme, onPay }: BookingCardProps) {
           </Text>
         </Pressable>
       )}
+
+      {/* Pick Up button — vehicle-prepared bookings */}
+      {canPickup && onPickup && (
+        <Pressable
+          style={[
+            styles.payButton,
+            {
+              backgroundColor: theme.color.accent,
+              borderRadius: theme.radius.input,
+              marginTop: theme.spacing.sm,
+            },
+          ]}
+          onPress={() => onPickup(item)}
+          accessibilityRole="button"
+          accessibilityLabel={i18n.t('pickupFlow.title')}
+        >
+          <Text
+            style={{
+              color: theme.color.onPrimary,
+              fontSize: theme.typography.caption.fontSize,
+              fontWeight: '700',
+              textAlign: 'center',
+            }}
+          >
+            {i18n.t('pickupFlow.title')}
+          </Text>
+        </Pressable>
+      )}
+
+      {/* Return button — picked-up bookings */}
+      {canReturn && onReturn && (
+        <Pressable
+          style={[
+            styles.payButton,
+            {
+              backgroundColor: theme.color.warning,
+              borderRadius: theme.radius.input,
+              marginTop: theme.spacing.sm,
+            },
+          ]}
+          onPress={() => onReturn(item)}
+          accessibilityRole="button"
+          accessibilityLabel={i18n.t('returnVehicle.buttonLabel')}
+        >
+          <Text
+            style={{
+              color: theme.color.text,
+              fontSize: theme.typography.caption.fontSize,
+              fontWeight: '700',
+              textAlign: 'center',
+            }}
+          >
+            {i18n.t('returnVehicle.buttonLabel')}
+          </Text>
+        </Pressable>
+      )}
     </View>
   );
 }
@@ -142,9 +203,11 @@ function BookingCard({ item, theme, onPay }: BookingCardProps) {
 type Props = {
   /** If provided, "Pay" button appears on reserved bookings */
   onPayBooking?: (booking: BookingDTO) => void;
+  /** If provided, "Pick Up" button appears on vehicle-prepared bookings */
+  onPickup?: (booking: BookingDTO) => void;
 };
 
-export function BookingsScreen({ onPayBooking }: Props = {}) {
+export function BookingsScreen({ onPayBooking, onPickup }: Props = {}) {
   const theme = useTheme();
   const [bookings, setBookings] = useState<BookingDTO[]>([]);
   const [loading, setLoading] = useState(true);
@@ -155,6 +218,29 @@ export function BookingsScreen({ onPayBooking }: Props = {}) {
     setBookings(result);
     setLoading(false);
   }, []);
+
+  const handleReturn = useCallback(async (booking: BookingDTO) => {
+    Alert.alert(
+      i18n.t('returnVehicle.confirmTitle'),
+      i18n.t('returnVehicle.confirmMessage'),
+      [
+        { text: i18n.t('returnVehicle.confirmCancel'), style: 'cancel' },
+        {
+          text: i18n.t('returnVehicle.confirmOk'),
+          style: 'destructive',
+          onPress: async () => {
+            const updated = await returnVehicle(booking.id);
+            if (updated) {
+              // Refresh the list to reflect new status
+              void load();
+            } else {
+              Alert.alert(i18n.t('returnVehicle.errorGeneric'));
+            }
+          },
+        },
+      ],
+    );
+  }, [load]);
 
   useEffect(() => {
     void load();
@@ -203,7 +289,13 @@ export function BookingsScreen({ onPayBooking }: Props = {}) {
           data={bookings}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
-            <BookingCard item={item} theme={theme} onPay={onPayBooking} />
+            <BookingCard
+              item={item}
+              theme={theme}
+              onPay={onPayBooking}
+              onPickup={onPickup}
+              onReturn={handleReturn}
+            />
           )}
           contentContainerStyle={{ padding: theme.spacing.md, paddingBottom: 120 }}
           showsVerticalScrollIndicator={false}

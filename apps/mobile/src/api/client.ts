@@ -9,6 +9,7 @@ import type {
   BookingDTO,
   PaymentDTO,
   PaymentMethod,
+  ContractDTO,
 } from '@car-rental/types';
 import { getToken } from '@/auth/storage';
 
@@ -108,4 +109,75 @@ export async function payBooking(
     body: JSON.stringify(input),
   });
   return res.ok ? ((await res.json()) as PayBookingResult) : null;
+}
+
+/** OTP error codes returned by the verify endpoint. */
+export type OtpErrorCode =
+  | 'otp_not_found'
+  | 'otp_expired'
+  | 'otp_locked'
+  | 'otp_invalid'
+  | 'invalid_request';
+
+export interface OtpVerifyResult {
+  verified: true;
+}
+
+export interface OtpVerifyError {
+  error: OtpErrorCode;
+  message: string;
+}
+
+/**
+ * Customer submits a 6-digit OTP to unlock the lockbox.
+ * Returns { verified: true } on success, or an OtpVerifyError on 422/4xx.
+ * IMPORTANT: the code is sent to the server but NEVER logged by this client.
+ */
+export async function verifyOtp(
+  bookingId: string,
+  code: string,
+): Promise<OtpVerifyResult | OtpVerifyError> {
+  const res = await authedFetch(`/api/bookings/${bookingId}/otp/verify`, {
+    method: 'POST',
+    body: JSON.stringify({ code }),
+  });
+  const json = (await res.json()) as OtpVerifyResult | OtpVerifyError;
+  return json;
+}
+
+export interface ContractSignInput {
+  signatureName: string;
+  agree: true;
+}
+
+export interface SignContractResult {
+  contract: ContractDTO;
+  booking: BookingDTO;
+}
+
+/**
+ * Customer signs the digital contract after OTP verification.
+ * On success the booking transitions to 'picked-up'.
+ * Returns null on unexpected non-2xx.
+ */
+export async function signContract(
+  bookingId: string,
+  input: ContractSignInput,
+): Promise<SignContractResult | null> {
+  const res = await authedFetch(`/api/bookings/${bookingId}/contract/sign`, {
+    method: 'POST',
+    body: JSON.stringify(input),
+  });
+  return res.ok ? ((await res.json()) as SignContractResult) : null;
+}
+
+/**
+ * Customer initiates a return for a picked-up booking.
+ * Returns the updated BookingDTO (status: 'returned') or null on error.
+ */
+export async function returnVehicle(bookingId: string): Promise<BookingDTO | null> {
+  const res = await authedFetch(`/api/bookings/${bookingId}/return`, {
+    method: 'POST',
+  });
+  return res.ok ? ((await res.json()) as BookingDTO) : null;
 }
