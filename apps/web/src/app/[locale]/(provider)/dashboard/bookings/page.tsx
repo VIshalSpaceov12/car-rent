@@ -4,8 +4,8 @@ import { getTranslations } from 'next-intl/server';
 import { verifySession, requireRole, tenantScope } from '@/server/auth/dal';
 import { prisma } from '@/server/db';
 import { bookingToDTO } from '@/server/mappers';
-import { StatusChip } from '@/ui/StatusChip';
 import { BOOKING_STATUSES, bookingStatusToDb, type BookingStatus } from '@car-rental/types';
+import { LiveBookingsTable } from './LiveBookingsTable';
 
 function wrongRoleTarget(role: string, locale: string): string {
   if (role === 'admin') return `/${locale}/admin`;
@@ -55,11 +55,21 @@ export default async function BookingsPage({
     orderBy: { createdAt: 'desc' },
   });
 
-  // Attach customerName to each DTO
-  const rows = bookings.map((b) => ({
-    ...bookingToDTO(b),
-    customerName: (b as typeof b & { customer: { name: string } }).customer.name,
-  }));
+  // Attach customerName + vehicleName for the client component
+  const rows = bookings.map((b) => {
+    const dto = bookingToDTO(b);
+    return {
+      id: dto.id,
+      status: dto.status,
+      customerName: (b as typeof b & { customer: { name: string } }).customer.name,
+      vehicleName: dto.vehicle.name,
+      startDate: dto.startDate,
+      endDate: dto.endDate,
+      plan: dto.plan,
+      currency: dto.currency,
+      totalAmount: dto.totalAmount,
+    };
+  });
 
   const t = await getTranslations('bookings');
 
@@ -99,47 +109,7 @@ export default async function BookingsPage({
       {rows.length === 0 ? (
         <p className="text-cr-text-muted">{t('noBookings')}</p>
       ) : (
-        <div className="overflow-x-auto rounded-cr-card border border-cr-border">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="bg-cr-surface-alt text-cr-text-muted">
-                <th className="px-cr-md py-cr-sm text-start font-semibold">{t('columns.customer')}</th>
-                <th className="px-cr-md py-cr-sm text-start font-semibold">{t('columns.vehicle')}</th>
-                <th className="px-cr-md py-cr-sm text-start font-semibold">{t('columns.dates')}</th>
-                <th className="px-cr-md py-cr-sm text-start font-semibold">{t('columns.plan')}</th>
-                <th className="px-cr-md py-cr-sm text-start font-semibold">{t('columns.total')}</th>
-                <th className="px-cr-md py-cr-sm text-start font-semibold">{t('columns.status')}</th>
-                <th className="px-cr-md py-cr-sm text-start font-semibold">{t('columns.actions')}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((b, i) => (
-                <tr key={b.id} className={i % 2 === 0 ? 'bg-cr-surface' : 'bg-cr-surface-alt'}>
-                  <td className="px-cr-md py-cr-sm text-cr-text font-medium">{b.customerName}</td>
-                  <td className="px-cr-md py-cr-sm text-cr-text-muted">{b.vehicle.name}</td>
-                  <td className="px-cr-md py-cr-sm text-cr-text-muted whitespace-nowrap">
-                    {b.startDate} {t('dateSeparator')} {b.endDate}
-                  </td>
-                  <td className="px-cr-md py-cr-sm text-cr-text-muted">{t(`plan.${b.plan}`)}</td>
-                  <td className="px-cr-md py-cr-sm text-cr-text font-medium">
-                    {b.currency} {b.totalAmount.toFixed(2)}
-                  </td>
-                  <td className="px-cr-md py-cr-sm">
-                    <StatusChip status={b.status} label={t(`status.${b.status}`)} />
-                  </td>
-                  <td className="px-cr-md py-cr-sm">
-                    <Link
-                      href={`/${locale}/dashboard/bookings/${b.id}`}
-                      className="text-cr-primary text-sm font-semibold hover:underline"
-                    >
-                      {t('view')}
-                    </Link>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <LiveBookingsTable rows={rows} locale={locale} />
       )}
     </main>
   );
