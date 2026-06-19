@@ -12,7 +12,8 @@
     "nav": {
       "fleet": "الأسطول",
       "categories": "الفئات",
-      "branches": "الفروع"
+      "branches": "الفروع",
+      "bookings": "الحجوزات"
     }
   },
   "admin": {
@@ -95,6 +96,67 @@
       "add": "إضافة",
       "adding": "جارٍ الإضافة…",
       "errorSave": "فشلت الإضافة. تحقق من المدخلات."
+    }
+  },
+  "bookings": {
+    "title": "الحجوزات",
+    "noBookings": "لا توجد حجوزات بعد.",
+    "backToList": "العودة إلى الحجوزات",
+    "view": "عرض",
+    "filter": {
+      "all": "الكل"
+    },
+    "columns": {
+      "customer": "العميل",
+      "vehicle": "المركبة",
+      "dates": "التواريخ",
+      "plan": "الخطة",
+      "total": "الإجمالي",
+      "status": "الحالة",
+      "actions": "الإجراءات"
+    },
+    "status": {
+      "reserved": "محجوز",
+      "confirmed": "مؤكد",
+      "vehicle-prepared": "جاهز",
+      "picked-up": "تم الاستلام",
+      "returned": "تم الإرجاع",
+      "completed": "مكتمل",
+      "rejected": "مرفوض",
+      "cancelled": "ملغى"
+    },
+    "plan": {
+      "daily": "يومي",
+      "weekly": "أسبوعي",
+      "monthly": "شهري",
+      "long-term": "طويل الأمد"
+    },
+    "action": {
+      "confirmed": "قبول",
+      "rejected": "رفض",
+      "cancelled": "إلغاء",
+      "vehicle-prepared": "تحضير المركبة",
+      "picked-up": "تسليم المركبة",
+      "returned": "تسجيل الإرجاع",
+      "completed": "إتمام الحجز"
+    },
+    "error": {
+      "illegalTransition": "هذا الانتقال غير مسموح به.",
+      "forbiddenRole": "ليس لديك صلاحية لتنفيذ هذا الإجراء.",
+      "notFound": "الحجز غير موجود."
+    },
+    "detail": {
+      "title": "تفاصيل الحجز",
+      "customer": "العميل",
+      "vehicle": "المركبة والتواريخ",
+      "pickup": "فرع الاستلام",
+      "dropoff": "فرع الإرجاع",
+      "pricing": "تفاصيل التسعير",
+      "baseAmount": "المبلغ الأساسي",
+      "tax": "الضريبة",
+      "serviceCharge": "رسوم الخدمة",
+      "total": "الإجمالي",
+      "actions": "الإجراءات"
     }
   },
   "branches": {

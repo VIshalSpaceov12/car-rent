@@ -12,7 +12,8 @@
     "nav": {
       "fleet": "Fleet",
       "categories": "Categories",
-      "branches": "Branches"
+      "branches": "Branches",
+      "bookings": "Bookings"
     }
   },
   "admin": {
@@ -95,6 +96,67 @@
       "add": "Add",
       "adding": "Adding…",
       "errorSave": "Failed to add. Check your inputs."
+    }
+  },
+  "bookings": {
+    "title": "Bookings",
+    "noBookings": "No bookings yet.",
+    "backToList": "Back to bookings",
+    "view": "View",
+    "filter": {
+      "all": "All"
+    },
+    "columns": {
+      "customer": "Customer",
+      "vehicle": "Vehicle",
+      "dates": "Dates",
+      "plan": "Plan",
+      "total": "Total",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "status": {
+      "reserved": "Reserved",
+      "confirmed": "Confirmed",
+      "vehicle-prepared": "Prepared",
+      "picked-up": "Picked up",
+      "returned": "Returned",
+      "completed": "Completed",
+      "rejected": "Rejected",
+      "cancelled": "Cancelled"
+    },
+    "plan": {
+      "daily": "Daily",
+      "weekly": "Weekly",
+      "monthly": "Monthly",
+      "long-term": "Long-term"
+    },
+    "action": {
+      "confirmed": "Accept",
+      "rejected": "Reject",
+      "cancelled": "Cancel",
+      "vehicle-prepared": "Mark prepared",
+      "picked-up": "Mark picked up",
+      "returned": "Mark returned",
+      "completed": "Complete"
+    },
+    "error": {
+      "illegalTransition": "This transition is not allowed.",
+      "forbiddenRole": "You do not have permission to perform this action.",
+      "notFound": "Booking not found."
+    },
+    "detail": {
+      "title": "Booking detail",
+      "customer": "Customer",
+      "vehicle": "Vehicle & dates",
+      "pickup": "Pickup branch",
+      "dropoff": "Dropoff branch",
+      "pricing": "Pricing breakdown",
+      "baseAmount": "Base amount",
+      "tax": "Tax",
+      "serviceCharge": "Service charge",
+      "total": "Total",
+      "actions": "Actions"
     }
   },
   "branches": {

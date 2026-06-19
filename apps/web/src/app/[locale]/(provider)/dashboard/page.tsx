@@ -43,6 +43,12 @@ export default async function DashboardPage({
         >
           <span className="text-lg font-semibold text-cr-text">{t('nav.branches')}</span>
         </Link>
+        <Link
+          href={`/${locale}/dashboard/bookings`}
+          className="flex flex-col gap-cr-sm rounded-cr-card border border-cr-border bg-cr-surface p-cr-lg min-w-[160px] hover:bg-cr-surface-alt transition"
+        >
+          <span className="text-lg font-semibold text-cr-text">{t('nav.bookings')}</span>
+        </Link>
       </nav>
     </main>
   );
