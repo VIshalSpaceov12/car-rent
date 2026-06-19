@@ -16,8 +16,17 @@ async function main() {
   });
   await prisma.businessSettings.upsert({
     where: { providerId: provider.id },
-    update: {},
-    create: { providerId: provider.id, currency: 'USD', taxRatePct: 5 },
+    update: {
+      planMultipliers: { daily: 1, weekly: 0.9, monthly: 0.8, 'long-term': 0.7 },
+      serviceChargePct: 3.5,
+    },
+    create: {
+      providerId: provider.id,
+      currency: 'USD',
+      taxRatePct: 5,
+      planMultipliers: { daily: 1, weekly: 0.9, monthly: 0.8, 'long-term': 0.7 },
+      serviceChargePct: 3.5,
+    },
   });
   const users: Array<[string, 'ADMIN'|'PROVIDER'|'STAFF'|'CUSTOMER', string | null, string]> = [
     ['admin@demo.test', 'ADMIN', null, 'Platform Admin'],
@@ -149,6 +158,77 @@ async function main() {
     }
   }
 
-  console.log('Seeded provider DriveHub + 4 users + 3 categories + 2 branches + 5 vehicles (password:', PASS, ')');
+  // ---- Demo bookings -------------------------------------------------------
+  const customer = await prisma.user.findUniqueOrThrow({ where: { email: 'customer@demo.test' } });
+  const settings = await prisma.businessSettings.findUniqueOrThrow({ where: { providerId: provider.id } });
+  const vehicle1 = await prisma.vehicle.findFirstOrThrow({ where: { providerId: provider.id, name: 'Toyota Corolla 2022' } });
+  const vehicle2 = await prisma.vehicle.findFirstOrThrow({ where: { providerId: provider.id, name: 'Ford Explorer 2023' } });
+
+  // Booking 1: reserved — 7 days, daily plan, Toyota Corolla
+  const b1Key = { providerId: provider.id, customerId: customer.id, vehicleId: vehicle1.id, startDate: new Date('2026-07-01') };
+  const existingB1 = await prisma.booking.findFirst({ where: b1Key });
+  if (!existingB1) {
+    const days = 7;
+    const baseRate = Number(vehicle1.pricePerDay);
+    const planMult = 1.0; // daily
+    const seasonalMult = 1.0;
+    const taxRatePct = Number(settings.taxRatePct);
+    const serviceChargePct = Number(settings.serviceChargePct);
+    const subtotal = Math.round(days * baseRate * planMult * seasonalMult * 100) / 100;
+    const taxAmount = Math.round(subtotal * (taxRatePct / 100) * 100) / 100;
+    const serviceCharge = Math.round(subtotal * (serviceChargePct / 100) * 100) / 100;
+    await prisma.booking.create({
+      data: {
+        providerId: provider.id,
+        customerId: customer.id,
+        vehicleId: vehicle1.id,
+        pickupBranchId: branchMap['downtown-drivehub'],
+        dropoffBranchId: branchMap['downtown-drivehub'],
+        startDate: new Date('2026-07-01'),
+        endDate: new Date('2026-07-08'),
+        plan: 'DAILY',
+        status: 'RESERVED',
+        baseAmount: subtotal,
+        taxAmount,
+        serviceCharge,
+        totalAmount: Math.round((subtotal + taxAmount + serviceCharge) * 100) / 100,
+        currency: settings.currency,
+      },
+    });
+  }
+
+  // Booking 2: confirmed — 14 days, weekly plan, Ford Explorer
+  const b2Key = { providerId: provider.id, customerId: customer.id, vehicleId: vehicle2.id, startDate: new Date('2026-08-01') };
+  const existingB2 = await prisma.booking.findFirst({ where: b2Key });
+  if (!existingB2) {
+    const days = 14;
+    const baseRate = Number(vehicle2.pricePerDay);
+    const planMult = 0.9; // weekly
+    const seasonalMult = 1.0;
+    const taxRatePct = Number(settings.taxRatePct);
+    const serviceChargePct = Number(settings.serviceChargePct);
+    const subtotal = Math.round(days * baseRate * planMult * seasonalMult * 100) / 100;
+    const taxAmount = Math.round(subtotal * (taxRatePct / 100) * 100) / 100;
+    const serviceCharge = Math.round(subtotal * (serviceChargePct / 100) * 100) / 100;
+    await prisma.booking.create({
+      data: {
+        providerId: provider.id,
+        customerId: customer.id,
+        vehicleId: vehicle2.id,
+        pickupBranchId: branchMap['airport-drivehub'],
+        startDate: new Date('2026-08-01'),
+        endDate: new Date('2026-08-15'),
+        plan: 'WEEKLY',
+        status: 'CONFIRMED',
+        baseAmount: subtotal,
+        taxAmount,
+        serviceCharge,
+        totalAmount: Math.round((subtotal + taxAmount + serviceCharge) * 100) / 100,
+        currency: settings.currency,
+      },
+    });
+  }
+
+  console.log('Seeded provider DriveHub + 4 users + 3 categories + 2 branches + 5 vehicles + 2 bookings (password:', PASS, ')');
 }
 main().finally(() => prisma.$disconnect());
