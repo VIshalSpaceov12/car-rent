@@ -9,6 +9,7 @@ import {
   type BookingStatus,
 } from '@car-rental/types';
 import { assertTransition, LifecycleError } from '@/server/modules/bookings/lifecycle';
+import { publishBookingStatus } from '@/server/realtime/publishBookingStatus';
 
 async function guardProvider(locale: string) {
   const user = await verifySession();
@@ -55,10 +56,12 @@ export async function transitionBooking(
   }
 
   const dbStatus = bookingStatusToDb(next) as Prisma.BookingUpdateInput['status'] & string;
-  await prisma.booking.update({
+  const updated = await prisma.booking.update({
     where: { id: bookingId },
     data: { status: dbStatus },
   });
+
+  publishBookingStatus(updated);
 
   redirect(`/${locale}/dashboard/bookings/${bookingId}`);
 }

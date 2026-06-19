@@ -5,6 +5,7 @@ import { verifySession, requireRole, tenantScope } from '@/server/auth/dal';
 import { prisma } from '@/server/db';
 import { bookingToDTO } from '@/server/mappers';
 import { StatusChip } from '@/ui/StatusChip';
+import { LiveStatusChip } from './LiveStatusChip';
 import {
   BOOKING_TRANSITIONS,
   bookingStatusFromDb,
@@ -144,7 +145,7 @@ export default async function BookingDetailPage({
 
       <div className="flex items-center gap-cr-md mb-cr-lg flex-wrap">
         <h1 className="text-2xl font-bold text-cr-text">{t('detail.title')}</h1>
-        <StatusChip status={booking.status} label={t(`status.${booking.status}`)} />
+        <LiveStatusChip bookingId={booking.id} initialStatus={booking.status} />
       </div>
 
       {/* Customer */}
