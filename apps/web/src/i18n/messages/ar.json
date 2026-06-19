@@ -8,10 +8,114 @@
   },
   "dashboard": {
     "title": "لوحة مزود الخدمة",
-    "soon": "الأسطول والحجوزات والفروع في المرحلة 1+."
+    "soon": "الأسطول والحجوزات والفروع في المرحلة 1+.",
+    "nav": {
+      "fleet": "الأسطول",
+      "categories": "الفئات",
+      "branches": "الفروع"
+    }
   },
   "admin": {
     "title": "مشرف المنصة",
     "soon": "الإشراف على جميع المستأجرين في المرحلة 7."
+  },
+  "fleet": {
+    "title": "الأسطول",
+    "addVehicle": "إضافة مركبة",
+    "noVehicles": "لا توجد مركبات بعد.",
+    "columns": {
+      "name": "الاسم",
+      "category": "الفئة",
+      "transmission": "ناقل الحركة",
+      "fuel": "الوقود",
+      "pricePerDay": "السعر / يوم",
+      "status": "الحالة",
+      "actions": "الإجراءات"
+    },
+    "edit": "تعديل",
+    "delete": "حذف",
+    "deleteConfirm": "هل تريد حذف هذه المركبة؟",
+    "form": {
+      "titleNew": "إضافة مركبة",
+      "titleEdit": "تعديل المركبة",
+      "name": "الاسم",
+      "category": "الفئة",
+      "branch": "الفرع",
+      "make": "الشركة المصنعة",
+      "model": "الموديل",
+      "year": "السنة",
+      "transmission": "ناقل الحركة",
+      "fuelType": "نوع الوقود",
+      "status": "الحالة",
+      "pricePerDay": "السعر في اليوم",
+      "seats": "عدد المقاعد",
+      "imageUrl": "رابط الصورة",
+      "description": "الوصف",
+      "save": "حفظ",
+      "saving": "جارٍ الحفظ…",
+      "cancel": "إلغاء",
+      "selectCategory": "اختر الفئة",
+      "selectBranch": "بدون فرع",
+      "selectTransmission": "اختر ناقل الحركة",
+      "selectFuelType": "اختر نوع الوقود",
+      "selectStatus": "اختر الحالة",
+      "errorSave": "فشل الحفظ. تحقق من المدخلات.",
+      "transmissions": {
+        "automatic": "أوتوماتيك",
+        "manual": "يدوي"
+      },
+      "fuelTypes": {
+        "petrol": "بنزين",
+        "diesel": "ديزل",
+        "electric": "كهربائي",
+        "hybrid": "هجين"
+      },
+      "statuses": {
+        "active": "نشط",
+        "maintenance": "صيانة",
+        "retired": "متقاعد"
+      }
+    }
+  },
+  "categories": {
+    "title": "الفئات",
+    "addCategory": "إضافة فئة",
+    "noCategories": "لا توجد فئات بعد.",
+    "columns": {
+      "name": "الاسم",
+      "slug": "المعرف",
+      "actions": "الإجراءات"
+    },
+    "delete": "حذف",
+    "deleteConfirm": "هل تريد حذف هذه الفئة؟",
+    "form": {
+      "name": "الاسم",
+      "slug": "المعرف",
+      "slugHint": "أحرف صغيرة وشرطات فقط",
+      "add": "إضافة",
+      "adding": "جارٍ الإضافة…",
+      "errorSave": "فشلت الإضافة. تحقق من المدخلات."
+    }
+  },
+  "branches": {
+    "title": "الفروع",
+    "addBranch": "إضافة فرع",
+    "noBranches": "لا توجد فروع بعد.",
+    "columns": {
+      "name": "الاسم",
+      "address": "العنوان",
+      "phone": "الهاتف",
+      "actions": "الإجراءات"
+    },
+    "delete": "حذف",
+    "deleteConfirm": "هل تريد حذف هذا الفرع؟",
+    "form": {
+      "name": "الاسم",
+      "address": "العنوان",
+      "phone": "الهاتف (اختياري)",
+      "add": "إضافة",
+      "adding": "جارٍ الإضافة…",
+      "errorSave": "فشلت الإضافة. تحقق من المدخلات."
+    }
   }
 }

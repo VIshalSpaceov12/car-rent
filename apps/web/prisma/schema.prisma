@@ -19,6 +19,24 @@ enum Locale {
   AR
 }
 
+enum Transmission {
+  AUTOMATIC
+  MANUAL
+}
+
+enum FuelType {
+  PETROL
+  DIESEL
+  ELECTRIC
+  HYBRID
+}
+
+enum VehicleStatus {
+  ACTIVE
+  MAINTENANCE
+  RETIRED
+}
+
 model Provider {
   id            String   @id @default(cuid())
   name          String
@@ -30,8 +48,70 @@ model Provider {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  users            User[]
-  businessSettings BusinessSettings?
+  users              User[]
+  businessSettings   BusinessSettings?
+  vehicleCategories  VehicleCategory[]
+  branches           Branch[]
+  vehicles           Vehicle[]
+}
+
+model VehicleCategory {
+  id         String   @id @default(cuid())
+  providerId String
+  name       String
+  slug       String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  provider Provider  @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  vehicles Vehicle[]
+
+  @@unique([providerId, slug])
+  @@index([providerId])
+}
+
+model Branch {
+  id         String   @id @default(cuid())
+  providerId String
+  name       String
+  address    String
+  phone      String?
+  lat        Float?
+  lng        Float?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  provider Provider  @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  vehicles Vehicle[]
+
+  @@index([providerId])
+}
+
+model Vehicle {
+  id          String        @id @default(cuid())
+  providerId  String
+  categoryId  String
+  branchId    String?
+  name        String
+  make        String?
+  model       String?
+  year        Int?
+  transmission Transmission
+  fuelType    FuelType
+  status      VehicleStatus @default(ACTIVE)
+  pricePerDay Decimal       @db.Decimal(10, 2)
+  seats       Int?
+  imageUrl    String?
+  description String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  provider Provider        @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  category VehicleCategory @relation(fields: [categoryId], references: [id])
+  branch   Branch?         @relation(fields: [branchId], references: [id])
+
+  @@index([providerId])
+  @@index([categoryId])
 }
 
 model BusinessSettings {

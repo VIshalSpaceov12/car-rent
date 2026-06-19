@@ -1,5 +1,5 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { HomeScreen } from '@/screens/Home';
+import { HomeStack } from './HomeStack';
 import { BookingsScreen } from '@/screens/Bookings';
 import { PickupScreen } from '@/screens/Pickup';
 import { SettingsScreen } from '@/screens/Settings';
@@ -25,7 +25,7 @@ export function TabNavigator({ onSignOut }: Props) {
     >
       <Tab.Screen
         name="Home"
-        component={HomeScreen}
+        component={HomeStack}
         options={{ title: i18n.t('home') }}
       />
       <Tab.Screen

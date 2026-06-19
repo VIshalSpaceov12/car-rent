@@ -14,6 +14,23 @@ export const i18n = new I18n({
     settings: 'Settings',
     onboarding: 'Welcome to Car Rental',
     getStarted: 'Get Started',
+    browse: {
+      title: 'Browse Vehicles',
+      searchPlaceholder: 'Search by name…',
+      empty: 'No vehicles found',
+      loading: 'Loading…',
+      perDay: '/ day',
+    },
+    vehicle: {
+      specs: 'Specs',
+      transmission: 'Transmission',
+      fuel: 'Fuel',
+      seats: 'Seats',
+      year: 'Year',
+      price: 'Price',
+      perDay: '/ day',
+      description: 'Description',
+    },
   },
   ar: {
     signIn: 'تسجيل الدخول',
@@ -26,6 +43,23 @@ export const i18n = new I18n({
     settings: 'الإعدادات',
     onboarding: 'مرحباً بك في تأجير السيارات',
     getStarted: 'ابدأ الآن',
+    browse: {
+      title: 'تصفح المركبات',
+      searchPlaceholder: 'ابحث بالاسم…',
+      empty: 'لا توجد مركبات',
+      loading: 'جارٍ التحميل…',
+      perDay: '/ يوم',
+    },
+    vehicle: {
+      specs: 'المواصفات',
+      transmission: 'ناقل الحركة',
+      fuel: 'الوقود',
+      seats: 'المقاعد',
+      year: 'السنة',
+      price: 'السعر',
+      perDay: '/ يوم',
+      description: 'الوصف',
+    },
   },
 });
 
