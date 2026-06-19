@@ -10,6 +10,7 @@ import type {
   PaymentDTO,
   PaymentMethod,
   ContractDTO,
+  ContractSignInput,
 } from '@car-rental/types';
 import { getToken } from '@/auth/storage';
 
@@ -113,10 +114,11 @@ export async function payBooking(
 
 /** OTP error codes returned by the verify endpoint. */
 export type OtpErrorCode =
-  | 'otp_not_found'
-  | 'otp_expired'
-  | 'otp_locked'
-  | 'otp_invalid'
+  | 'not_found'
+  | 'expired'
+  | 'consumed'
+  | 'locked'
+  | 'invalid'
   | 'invalid_request';
 
 export interface OtpVerifyResult {
@@ -143,11 +145,6 @@ export async function verifyOtp(
   });
   const json = (await res.json()) as OtpVerifyResult | OtpVerifyError;
   return json;
-}
-
-export interface ContractSignInput {
-  signatureName: string;
-  agree: true;
 }
 
 export interface SignContractResult {

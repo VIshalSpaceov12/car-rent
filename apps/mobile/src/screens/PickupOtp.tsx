@@ -24,11 +24,11 @@ type Props = {
 
 function mapOtpError(err: OtpVerifyError): string {
   switch (err.error) {
-    case 'otp_invalid':
+    case 'invalid':
       return i18n.t('pickupFlow.errorInvalid');
-    case 'otp_expired':
+    case 'expired':
       return i18n.t('pickupFlow.errorExpired');
-    case 'otp_locked':
+    case 'locked':
       return i18n.t('pickupFlow.errorLocked');
     default:
       return i18n.t('pickupFlow.errorGeneric');
@@ -211,7 +211,7 @@ export function PickupOtpScreen({ booking, onVerified, onCancel }: Props) {
           accessibilityRole="button"
         >
           <Text style={{ color: theme.color.textMuted, fontSize: theme.typography.body.fontSize }}>
-            {i18n.t('bookingList.retry')}
+            {i18n.t('pickupFlow.cancel')}
           </Text>
         </Pressable>
       </ScrollView>

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 vi.mock('@/auth/storage', () => ({ getToken: vi.fn().mockResolvedValue(null) }));
-import { login, me, listVehicles, getVehicle, quoteBooking, createBooking, listBookings, payBooking, verifyOtp, signContract } from './client';
+import { login, me, listVehicles, getVehicle, quoteBooking, createBooking, listBookings, payBooking, verifyOtp, signContract, returnVehicle } from './client';
 import { getToken } from '@/auth/storage';
 
 describe('mobile api client', () => {
@@ -295,9 +295,9 @@ describe('verifyOtp()', () => {
     );
   });
 
-  it('returns error object on 422 (otp_invalid)', async () => {
+  it('returns error object on 422 (invalid)', async () => {
     vi.mocked(getToken).mockResolvedValueOnce('tok123');
-    const errBody = { error: 'otp_invalid', message: 'Invalid OTP' };
+    const errBody = { error: 'invalid', message: 'Invalid OTP' };
     global.fetch = vi.fn().mockResolvedValue({
       ok: false,
       status: 422,
@@ -308,9 +308,22 @@ describe('verifyOtp()', () => {
     expect(result).toEqual(errBody);
   });
 
-  it('returns error object on 422 (otp_locked)', async () => {
+  it('returns error object on 422 (locked)', async () => {
     vi.mocked(getToken).mockResolvedValueOnce('tok123');
-    const errBody = { error: 'otp_locked', message: 'Too many attempts' };
+    const errBody = { error: 'locked', message: 'Too many attempts' };
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 422,
+      json: async () => errBody,
+    }) as never;
+
+    const result = await verifyOtp('b1', '000000');
+    expect(result).toEqual(errBody);
+  });
+
+  it('returns error object on 422 (expired)', async () => {
+    vi.mocked(getToken).mockResolvedValueOnce('tok123');
+    const errBody = { error: 'expired', message: 'OTP has expired' };
     global.fetch = vi.fn().mockResolvedValue({
       ok: false,
       status: 422,
@@ -390,5 +403,65 @@ describe('signContract()', () => {
       json: async () => ({ error: 'contract_already_signed' }),
     }) as never;
     expect(await signContract('b1', { signatureName: 'Jane Doe', agree: true })).toBeNull();
+  });
+});
+
+describe('returnVehicle()', () => {
+  beforeEach(() => vi.resetAllMocks());
+
+  const mockBooking: import('@car-rental/types').BookingDTO = {
+    id: 'b1',
+    status: 'returned',
+    vehicle: { id: 'v1', name: 'Toyota Camry' },
+    startDate: '2025-01-01',
+    endDate: '2025-01-04',
+    plan: 'daily',
+    baseAmount: 150,
+    taxAmount: 7.5,
+    serviceCharge: 10,
+    totalAmount: 167.5,
+    currency: 'USD',
+    createdAt: '2025-01-01T00:00:00.000Z',
+  };
+
+  it('returns BookingDTO on 200', async () => {
+    vi.mocked(getToken).mockResolvedValueOnce('tok123');
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => mockBooking,
+    }) as never;
+
+    const result = await returnVehicle('b1');
+    expect(result).toEqual(mockBooking);
+  });
+
+  it('returns null on non-ok response', async () => {
+    vi.mocked(getToken).mockResolvedValueOnce('tok123');
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 422,
+      json: async () => ({ error: 'invalid_status' }),
+    }) as never;
+
+    const result = await returnVehicle('b1');
+    expect(result).toBeNull();
+  });
+
+  it('sends Authorization header to /api/bookings/:id/return', async () => {
+    vi.mocked(getToken).mockResolvedValueOnce('tok-return');
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => mockBooking,
+    }) as never;
+
+    await returnVehicle('b1');
+    expect(global.fetch).toHaveBeenCalledWith(
+      expect.stringContaining('/api/bookings/b1/return'),
+      expect.objectContaining({
+        headers: expect.objectContaining({ authorization: 'Bearer tok-return' }),
+      }),
+    );
   });
 });

@@ -114,6 +114,7 @@ export const i18n = new I18n({
       errorExpired: 'This code has expired. Please ask the agent to reissue.',
       errorLocked: 'Too many failed attempts. Please contact the agent.',
       errorGeneric: 'Verification failed. Please try again.',
+      cancel: 'Cancel',
     },
     contract: {
       title: 'Rental Agreement',
@@ -253,6 +254,7 @@ export const i18n = new I18n({
       errorExpired: 'انتهت صلاحية هذا الرمز. اطلب من الموظف إعادة الإصدار.',
       errorLocked: 'تجاوزت عدد المحاولات المسموح بها. يُرجى التواصل مع الموظف.',
       errorGeneric: 'فشل التحقق. يُرجى المحاولة مجدداً.',
+      cancel: 'إلغاء',
     },
     contract: {
       title: 'اتفاقية الإيجار',
