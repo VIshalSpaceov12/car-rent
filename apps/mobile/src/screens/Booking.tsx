@@ -126,7 +126,7 @@ export function BookingScreen({ vehicleId, vehicleName, pricePerDay, onBookingCr
           textAlign: isRtl ? 'right' : 'left',
         }}
       >
-        {Intl.NumberFormat(i18n.locale, { style: 'currency', currency: 'USD' }).format(pricePerDay)}
+        {Intl.NumberFormat(i18n.locale, { style: 'currency', currency }).format(pricePerDay)}
         {' '}
         {i18n.t('vehicle.perDay')}
       </Text>

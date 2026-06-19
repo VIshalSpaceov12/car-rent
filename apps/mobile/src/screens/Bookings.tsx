@@ -75,7 +75,7 @@ function BookingCard({ item, theme }: BookingCardProps) {
           ]}
         >
           <Text style={{ color: fg, fontSize: theme.typography.label.fontSize, fontWeight: '600' }}>
-            {item.status}
+            {i18n.t('bookingList.status.' + item.status)}
           </Text>
         </View>
       </View>
@@ -158,7 +158,7 @@ export function BookingsScreen() {
             accessibilityRole="button"
           >
             <Text style={{ color: theme.color.primary, fontWeight: '600' }}>
-              {i18n.t('browse.loading')}
+              {i18n.t('bookingList.retry')}
             </Text>
           </Pressable>
         </View>
