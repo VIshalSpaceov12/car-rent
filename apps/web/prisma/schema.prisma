@@ -1,0 +1,74 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  CUSTOMER
+  PROVIDER
+  STAFF
+  ADMIN
+}
+
+enum Locale {
+  EN
+  AR
+}
+
+model Provider {
+  id            String   @id @default(cuid())
+  name          String
+  slug          String   @unique
+  logoUrl       String?
+  colors        Json
+  defaultLocale Locale   @default(EN)
+  status        String   @default("active")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  users            User[]
+  businessSettings BusinessSettings?
+}
+
+model BusinessSettings {
+  id                 String   @id @default(cuid())
+  providerId         String   @unique
+  currency           String   @default("USD")
+  taxRatePct         Decimal  @default(0) @db.Decimal(5, 2)
+  minRentalDays      Int      @default(1)
+  cancellationPolicy String   @default("")
+
+  provider Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id           String   @id @default(cuid())
+  providerId   String?
+  role         UserRole
+  email        String   @unique
+  passwordHash String
+  name         String
+  locale       Locale   @default(EN)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  provider Provider? @relation(fields: [providerId], references: [id], onDelete: SetNull)
+  sessions Session[]
+
+  @@index([providerId])
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}

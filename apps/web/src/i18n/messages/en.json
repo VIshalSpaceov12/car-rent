@@ -1,0 +1,17 @@
+{
+  "auth": {
+    "signIn": "Sign in",
+    "email": "Email",
+    "password": "Password",
+    "invalid": "Invalid credentials",
+    "signingIn": "Signing in…"
+  },
+  "dashboard": {
+    "title": "Provider dashboard",
+    "soon": "Fleet, bookings, branches land in Phase 1+."
+  },
+  "admin": {
+    "title": "Platform admin",
+    "soon": "All-tenant oversight lands in Phase 7."
+  }
+}
