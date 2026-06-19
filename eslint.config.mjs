@@ -19,4 +19,8 @@ export default tseslint.config(
       ],
     },
   },
+  {
+    files: ['apps/**/src/app/**/*.tsx', 'apps/**/src/ui/**/*.tsx'],
+    rules: { 'no-restricted-syntax': ['error', { selector: "Literal[value=/#[0-9a-fA-F]{3,8}/]", message: 'No raw hex in JSX — use CSS variables.' }] },
+  },
 );
