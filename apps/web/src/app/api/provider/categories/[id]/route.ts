@@ -15,6 +15,7 @@ export async function PATCH(req: Request, { params }: Params) {
   } catch {
     return NextResponse.json({ error: 'forbidden' }, { status: 403 });
   }
+  if (user.role !== 'admin' && !user.providerId) return NextResponse.json({ error: 'provider_not_associated' }, { status: 422 });
 
   const body = await req.json().catch(() => null);
   const parsed = categoryCreateSchema.partial().safeParse(body);
@@ -44,6 +45,7 @@ export async function DELETE(_req: Request, { params }: Params) {
   } catch {
     return NextResponse.json({ error: 'forbidden' }, { status: 403 });
   }
+  if (user.role !== 'admin' && !user.providerId) return NextResponse.json({ error: 'provider_not_associated' }, { status: 422 });
 
   // Atomic tenant-scoped delete — cross-tenant deletes return count=0
   const result = await prisma.vehicleCategory.deleteMany({ where: { id, ...tenantScope(user) } });
