@@ -36,6 +36,13 @@ export async function transitionBooking(
 
   if (!booking) return { error: 'not_found' };
 
+  // Block vehicle-prepared → picked-up here; this transition REQUIRES a verified OTP
+  // + signed contract and must go through the customer keyless flow
+  // (POST /api/bookings/[id]/otp/verify → POST /api/bookings/[id]/contract/sign).
+  if (next === 'picked-up') {
+    return { error: 'otp_required' };
+  }
+
   const currentStatus = bookingStatusFromDb(booking.status);
 
   try {

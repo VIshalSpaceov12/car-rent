@@ -234,6 +234,67 @@ export const payInitiateSchema = z.object({
 });
 export type PayInitiateInput = z.infer<typeof payInitiateSchema>;
 
+// ---- ReturnCondition enum -----------------------------------------------
+export const RETURN_CONDITIONS = ['clean', 'minor-damage', 'major-damage'] as const;
+export type ReturnCondition = (typeof RETURN_CONDITIONS)[number];
+
+export const returnConditionToDb = (c: ReturnCondition): string => toDb(c);
+export const returnConditionFromDb = (c: string): ReturnCondition => fromDb(c) as ReturnCondition;
+
+// ---- OTP / Contract / Inspection DTOs + schemas -------------------------
+
+/**
+ * Booking-bound OTP status — NEVER contains the plaintext code.
+ */
+export interface OtpStatusDTO {
+  issued: boolean;
+  expiresAt: string | null;
+  consumedAt: string | null;
+  attempts: number;
+}
+
+/**
+ * One-time response from the issue endpoint — the only time plaintext leaves server.
+ * NEVER stored or logged.
+ */
+export interface IssuedOtpDTO {
+  code: string;
+}
+
+/** Customer submits a 6-digit code to verify/unlock the lockbox. */
+export const otpVerifySchema = z.object({
+  code: z.string().regex(/^\d{6}$/, 'OTP must be exactly 6 digits'),
+});
+export type OtpVerifyInput = z.infer<typeof otpVerifySchema>;
+
+export interface ContractDTO {
+  id: string;
+  bookingId: string;
+  signedAt: string | null;
+  signatureName: string | null;
+  termsVersion: string;
+}
+
+export const contractSignSchema = z.object({
+  signatureName: z.string().min(1, 'Signature name is required'),
+  agree: z.literal(true, { errorMap: () => ({ message: 'You must agree to the terms' }) }),
+});
+export type ContractSignInput = z.infer<typeof contractSignSchema>;
+
+export interface InspectionDTO {
+  id: string;
+  bookingId: string;
+  condition: ReturnCondition;
+  notes: string | null;
+  inspectedAt: string;
+}
+
+export const inspectionSchema = z.object({
+  condition: z.enum(RETURN_CONDITIONS),
+  notes: z.string().optional(),
+});
+export type InspectionInput = z.infer<typeof inspectionSchema>;
+
 // ---- Booking lifecycle transition map ------------------------------------
 // Maps current status -> list of { next, allowedRoles }
 // provider/staff drive operational transitions; customer can only cancel from early states

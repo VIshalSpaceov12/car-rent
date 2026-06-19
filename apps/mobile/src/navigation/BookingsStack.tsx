@@ -4,12 +4,18 @@ import type { BookingDTO } from '@car-rental/types';
 import { BookingsScreen } from '@/screens/Bookings';
 import { CheckoutScreen } from '@/screens/Checkout';
 import { PaymentConfirmationScreen } from '@/screens/PaymentConfirmation';
+import { PickupOtpScreen } from '@/screens/PickupOtp';
+import { ContractScreen } from '@/screens/Contract';
+import { PickupSuccessScreen } from '@/screens/PickupSuccess';
 import { i18n } from '@/i18n';
 
 export type BookingsStackParamList = {
   BookingsList: undefined;
   Checkout: { booking: BookingDTO };
   PaymentConfirmation: { booking: BookingDTO };
+  PickupOtp: { booking: BookingDTO };
+  Contract: { booking: BookingDTO };
+  PickupSuccess: { booking: BookingDTO };
 };
 
 const Stack = createNativeStackNavigator<BookingsStackParamList>();
@@ -32,6 +38,7 @@ export function BookingsStack() {
         {({ navigation }) => (
           <BookingsScreen
             onPayBooking={(booking) => navigation.navigate('Checkout', { booking })}
+            onPickup={(booking) => navigation.navigate('PickupOtp', { booking })}
           />
         )}
       </Stack.Screen>
@@ -54,6 +61,46 @@ export function BookingsStack() {
       >
         {({ route, navigation }) => (
           <PaymentConfirmationScreen
+            booking={route.params.booking}
+            onDone={() => navigation.popToTop()}
+          />
+        )}
+      </Stack.Screen>
+
+      <Stack.Screen
+        name="PickupOtp"
+        options={{ title: i18n.t('pickupFlow.title') }}
+      >
+        {({ route, navigation }) => (
+          <PickupOtpScreen
+            booking={route.params.booking}
+            onVerified={(booking) => navigation.replace('Contract', { booking })}
+            onCancel={() => navigation.goBack()}
+          />
+        )}
+      </Stack.Screen>
+
+      <Stack.Screen
+        name="Contract"
+        options={{ title: i18n.t('contract.title') }}
+      >
+        {({ route, navigation }) => (
+          <ContractScreen
+            booking={route.params.booking}
+            onSigned={(updatedBooking) =>
+              navigation.replace('PickupSuccess', { booking: updatedBooking })
+            }
+            onCancel={() => navigation.goBack()}
+          />
+        )}
+      </Stack.Screen>
+
+      <Stack.Screen
+        name="PickupSuccess"
+        options={{ title: i18n.t('pickupSuccess.title'), headerBackVisible: false }}
+      >
+        {({ route, navigation }) => (
+          <PickupSuccessScreen
             booking={route.params.booking}
             onDone={() => navigation.popToTop()}
           />

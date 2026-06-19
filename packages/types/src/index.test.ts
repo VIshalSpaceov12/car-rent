@@ -11,6 +11,8 @@ import {
   PAYMENT_METHODS, PAYMENT_STATUSES,
   paymentMethodToDb, paymentMethodFromDb,
   paymentStatusToDb, paymentStatusFromDb,
+  RETURN_CONDITIONS, returnConditionToDb, returnConditionFromDb,
+  otpVerifySchema, contractSignSchema, inspectionSchema,
 } from './index';
 
 describe('@car-rental/types', () => {
@@ -197,6 +199,72 @@ describe('@car-rental/types', () => {
 
   it('payInitiateSchema: rejects invalid cardOutcome', () => {
     const result = payInitiateSchema.safeParse({ method: 'card', cardOutcome: 'maybe' });
+    expect(result.success).toBe(false);
+  });
+
+  // ---- ReturnCondition enum + mappers -------------------------------------
+  it('exposes RETURN_CONDITIONS', () => {
+    expect(RETURN_CONDITIONS).toEqual(['clean', 'minor-damage', 'major-damage']);
+  });
+
+  it('maps ReturnCondition wire ⇄ db', () => {
+    expect(returnConditionToDb('clean')).toBe('CLEAN');
+    expect(returnConditionToDb('minor-damage')).toBe('MINOR_DAMAGE');
+    expect(returnConditionToDb('major-damage')).toBe('MAJOR_DAMAGE');
+    expect(returnConditionFromDb('MINOR_DAMAGE')).toBe('minor-damage');
+  });
+
+  // ---- otpVerifySchema ----------------------------------------------------
+  it('otpVerifySchema: accepts a valid 6-digit code', () => {
+    expect(otpVerifySchema.safeParse({ code: '123456' }).success).toBe(true);
+  });
+
+  it('otpVerifySchema: rejects a 5-digit code', () => {
+    expect(otpVerifySchema.safeParse({ code: '12345' }).success).toBe(false);
+  });
+
+  it('otpVerifySchema: rejects a 7-digit code', () => {
+    expect(otpVerifySchema.safeParse({ code: '1234567' }).success).toBe(false);
+  });
+
+  it('otpVerifySchema: rejects non-numeric characters', () => {
+    expect(otpVerifySchema.safeParse({ code: '12345a' }).success).toBe(false);
+  });
+
+  // ---- contractSignSchema -------------------------------------------------
+  it('contractSignSchema: accepts a valid signature with agree=true', () => {
+    const result = contractSignSchema.safeParse({ signatureName: 'John Doe', agree: true });
+    expect(result.success).toBe(true);
+  });
+
+  it('contractSignSchema: rejects empty signatureName', () => {
+    const result = contractSignSchema.safeParse({ signatureName: '', agree: true });
+    expect(result.success).toBe(false);
+  });
+
+  it('contractSignSchema: rejects agree=false', () => {
+    const result = contractSignSchema.safeParse({ signatureName: 'John Doe', agree: false });
+    expect(result.success).toBe(false);
+  });
+
+  it('contractSignSchema: rejects missing agree field', () => {
+    const result = contractSignSchema.safeParse({ signatureName: 'John Doe' });
+    expect(result.success).toBe(false);
+  });
+
+  // ---- inspectionSchema ---------------------------------------------------
+  it('inspectionSchema: accepts valid condition with notes', () => {
+    const result = inspectionSchema.safeParse({ condition: 'minor-damage', notes: 'Scratch on bumper' });
+    expect(result.success).toBe(true);
+  });
+
+  it('inspectionSchema: accepts valid condition without notes', () => {
+    const result = inspectionSchema.safeParse({ condition: 'clean' });
+    expect(result.success).toBe(true);
+  });
+
+  it('inspectionSchema: rejects invalid condition', () => {
+    const result = inspectionSchema.safeParse({ condition: 'totaled' });
     expect(result.success).toBe(false);
   });
 });

@@ -8,11 +8,16 @@ import { StatusChip } from '@/ui/StatusChip';
 import {
   BOOKING_TRANSITIONS,
   bookingStatusFromDb,
+  returnConditionFromDb,
   type BookingStatus,
   type UserRole,
+  type OtpStatusDTO,
 } from '@car-rental/types';
 import { transitionBooking } from '../actions';
 import { ActionButtons } from './ActionButtons';
+import { OtpPanel } from './OtpPanel';
+import { InspectionForm } from './InspectionForm';
+import { issueBookingOtp, prepareVehicle, recordInspection } from './bookingDetailActions';
 
 function wrongRoleTarget(role: string, locale: string): string {
   if (role === 'admin') return `/${locale}/admin`;
@@ -25,6 +30,9 @@ const BOOKING_INCLUDE = {
   pickupBranch: { select: { name: true } },
   dropoffBranch: { select: { name: true } },
   payment: true,
+  otp: true,
+  contract: true,
+  inspection: true,
 } as const;
 
 /** Statuses that a provider/staff can action (legal next states for the role). */
@@ -70,20 +78,59 @@ export default async function BookingDetailPage({
   const nextStatuses = providerNextStatuses(currentStatus, user.role);
 
   // Build action items for the client component
-  const actionItems = nextStatuses.map((next) => ({
-    next,
-    label: t(`action.${next}`),
-    variant: (next === 'rejected' || next === 'cancelled' ? 'ghost' : 'primary') as
-      | 'primary'
-      | 'ghost',
-    action: transitionBooking.bind(null, locale, id, next),
-  }));
+  // Exclude vehicle-prepared: the dedicated "Prepare vehicle" button handles that.
+  // Exclude picked-up: that transition is OTP-gated and only reachable via the
+  // customer keyless flow (verify OTP → sign contract). A provider must never
+  // drive picked-up from the dashboard.
+  const actionItems = nextStatuses
+    .filter((next) => next !== 'vehicle-prepared' && next !== 'picked-up')
+    .map((next) => ({
+      next,
+      label: t(`action.${next}`),
+      variant: (next === 'rejected' || next === 'cancelled' ? 'ghost' : 'primary') as
+        | 'primary'
+        | 'ghost',
+      action: transitionBooking.bind(null, locale, id, next),
+    }));
 
   const errorLabels: Record<string, string> = {
     ILLEGAL_TRANSITION: t('error.illegalTransition'),
     FORBIDDEN_ROLE: t('error.forbiddenRole'),
     not_found: t('error.notFound'),
+    invalid_status: t('error.illegalTransition'),
   };
+
+  // OTP status (never exposes hash or plaintext)
+  const otpStatus: OtpStatusDTO | null = raw.otp
+    ? {
+        issued: true,
+        expiresAt: raw.otp.expiresAt.toISOString(),
+        consumedAt: raw.otp.consumedAt?.toISOString() ?? null,
+        attempts: raw.otp.attempts,
+      }
+    : null;
+
+  const contractSigned = raw.contract?.signedAt !== null && raw.contract !== null;
+
+  // Provider can issue/re-issue OTP when booking is confirmed or vehicle-prepared
+  const canIssueOtp =
+    currentStatus === 'confirmed' || currentStatus === 'vehicle-prepared';
+
+  // Show "Prepare vehicle" button separately when status is confirmed
+  const canPrepare = currentStatus === 'confirmed' && nextStatuses.includes('vehicle-prepared');
+
+  // Show inspection form when status is returned
+  const showInspection = currentStatus === 'returned';
+
+  // Show inspection record when completed and inspection exists
+  const completedInspection =
+    currentStatus === 'completed' && raw.inspection
+      ? {
+          condition: returnConditionFromDb(raw.inspection.condition),
+          notes: raw.inspection.notes,
+          inspectedAt: raw.inspection.inspectedAt.toISOString(),
+        }
+      : null;
 
   return (
     <main className="ps-cr-lg pe-cr-lg pt-cr-lg pb-cr-xl max-w-3xl">
@@ -188,7 +235,68 @@ export default async function BookingDetailPage({
         </section>
       )}
 
-      {/* Transition actions */}
+      {/* Prepare vehicle (confirmed → vehicle-prepared) */}
+      {canPrepare && (
+        <section className="mb-cr-md">
+          <ActionButtons
+            actions={[
+              {
+                next: 'vehicle-prepared',
+                label: t('action.vehicle-prepared'),
+                variant: 'primary',
+                action: prepareVehicle.bind(null, locale, id),
+              },
+            ]}
+            errorLabels={errorLabels}
+          />
+        </section>
+      )}
+
+      {/* OTP lockbox panel (confirmed or vehicle-prepared) */}
+      {(canIssueOtp || otpStatus !== null) && (
+        <OtpPanel
+          otpStatus={otpStatus}
+          contractSigned={contractSigned}
+          canIssue={canIssueOtp}
+          issueAction={issueBookingOtp.bind(null, locale, id)}
+          errorLabels={errorLabels}
+        />
+      )}
+
+      {/* Return inspection form (returned → completed) */}
+      {showInspection && (
+        <InspectionForm
+          inspectAction={recordInspection.bind(null, locale, id)}
+          errorLabels={errorLabels}
+        />
+      )}
+
+      {/* Completed inspection summary */}
+      {completedInspection && (
+        <section className="rounded-cr-card border border-cr-border bg-cr-surface p-cr-md mb-cr-md">
+          <h2 className="text-sm font-semibold text-cr-text-muted uppercase mb-cr-sm">
+            {t('inspection.sectionTitle')}
+          </h2>
+          <dl className="grid grid-cols-2 gap-x-cr-lg gap-y-cr-xs text-sm">
+            <dt className="text-cr-text-muted">{t('inspection.conditionLabel')}</dt>
+            <dd className="text-cr-text font-medium">
+              {t(`inspection.condition.${completedInspection.condition}`)}
+            </dd>
+            {completedInspection.notes && (
+              <>
+                <dt className="text-cr-text-muted">{t('inspection.notesLabel')}</dt>
+                <dd className="text-cr-text">{completedInspection.notes}</dd>
+              </>
+            )}
+            <dt className="text-cr-text-muted">{t('inspection.inspectedAt')}</dt>
+            <dd className="text-cr-text text-end">
+              {new Date(completedInspection.inspectedAt).toLocaleString()}
+            </dd>
+          </dl>
+        </section>
+      )}
+
+      {/* Generic transition actions (reject/cancel/return etc.) */}
       {actionItems.length > 0 && (
         <section>
           <h2 className="text-sm font-semibold text-cr-text-muted uppercase mb-cr-sm">

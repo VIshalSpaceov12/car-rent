@@ -148,6 +148,38 @@
       "forbiddenRole": "ليس لديك صلاحية لتنفيذ هذا الإجراء.",
       "notFound": "الحجز غير موجود."
     },
+    "otp": {
+      "sectionTitle": "صندوق رمز OTP",
+      "state": {
+        "none": "لم يُصدر",
+        "issued": "صادر",
+        "consumed": "مُستخدم",
+        "expired": "منتهي الصلاحية"
+      },
+      "attempts": "{count} محاولة",
+      "contractSigned": "تم توقيع العقد",
+      "contractPending": "العقد معلق",
+      "issueButton": "إصدار رمز OTP",
+      "reissueButton": "إعادة إصدار رمز OTP",
+      "issuing": "جارٍ الإصدار…",
+      "codeHint": "اقرأ هذا الرمز للعميل — يُعرض مرة واحدة فقط.",
+      "codeAriaLabel": "الرمز الأحادي الاستخدام",
+      "codeOnceWarning": "لن يُعرض هذا الرمز مرة أخرى."
+    },
+    "inspection": {
+      "sectionTitle": "فحص الإرجاع",
+      "conditionLabel": "حالة المركبة",
+      "notesLabel": "ملاحظات",
+      "notesPlaceholder": "صف أي أضرار أو ملاحظات…",
+      "submit": "إتمام الحجز",
+      "submitting": "جارٍ الحفظ…",
+      "inspectedAt": "وقت الفحص",
+      "condition": {
+        "clean": "نظيف",
+        "minor-damage": "ضرر طفيف",
+        "major-damage": "ضرر بالغ"
+      }
+    },
     "detail": {
       "title": "تفاصيل الحجز",
       "customer": "العميل",

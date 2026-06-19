@@ -57,6 +57,19 @@ export async function PATCH(
 
   const currentStatus = bookingStatusFromDb(booking.status);
 
+  // Block vehicle-prepared → picked-up here; this transition REQUIRES a verified OTP
+  // + signed contract and must go through POST /api/bookings/[id]/contract/sign.
+  if (currentStatus === 'vehicle-prepared' && nextStatus === 'picked-up') {
+    return NextResponse.json(
+      {
+        error: 'transition_not_allowed',
+        message:
+          'The vehicle-prepared → picked-up transition requires a verified OTP and a signed contract. Use POST /api/bookings/{id}/contract/sign.',
+      },
+      { status: 422 }
+    );
+  }
+
   try {
     assertTransition(currentStatus, nextStatus, user.role);
   } catch (err) {

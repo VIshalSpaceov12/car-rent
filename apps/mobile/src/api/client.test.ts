@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 vi.mock('@/auth/storage', () => ({ getToken: vi.fn().mockResolvedValue(null) }));
-import { login, me, listVehicles, getVehicle, quoteBooking, createBooking, listBookings, payBooking } from './client';
+import { login, me, listVehicles, getVehicle, quoteBooking, createBooking, listBookings, payBooking, verifyOtp, signContract, returnVehicle } from './client';
 import { getToken } from '@/auth/storage';
 
 describe('mobile api client', () => {
@@ -254,5 +254,214 @@ describe('payBooking()', () => {
     vi.mocked(getToken).mockResolvedValueOnce('tok123');
     global.fetch = vi.fn().mockResolvedValue({ ok: false, status: 402, json: async () => ({}) }) as never;
     expect(await payBooking('b1', { method: 'card', cardOutcome: 'fail' })).toBeNull();
+  });
+});
+
+describe('verifyOtp()', () => {
+  beforeEach(() => vi.resetAllMocks());
+
+  it('POSTs code to correct endpoint and returns verified:true on 200', async () => {
+    vi.mocked(getToken).mockResolvedValueOnce('tok123');
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({ verified: true }),
+    }) as never;
+
+    const result = await verifyOtp('b1', '123456');
+    expect(result).toEqual({ verified: true });
+    expect(global.fetch).toHaveBeenCalledWith(
+      expect.stringContaining('/api/bookings/b1/otp/verify'),
+      expect.objectContaining({
+        method: 'POST',
+        body: JSON.stringify({ code: '123456' }),
+      }),
+    );
+  });
+
+  it('sends Authorization header with stored token', async () => {
+    vi.mocked(getToken).mockResolvedValueOnce('tok-otp');
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({ verified: true }),
+    }) as never;
+    await verifyOtp('b1', '654321');
+    expect(global.fetch).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.objectContaining({
+        headers: expect.objectContaining({ authorization: 'Bearer tok-otp' }),
+      }),
+    );
+  });
+
+  it('returns error object on 422 (invalid)', async () => {
+    vi.mocked(getToken).mockResolvedValueOnce('tok123');
+    const errBody = { error: 'invalid', message: 'Invalid OTP' };
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 422,
+      json: async () => errBody,
+    }) as never;
+
+    const result = await verifyOtp('b1', '000000');
+    expect(result).toEqual(errBody);
+  });
+
+  it('returns error object on 422 (locked)', async () => {
+    vi.mocked(getToken).mockResolvedValueOnce('tok123');
+    const errBody = { error: 'locked', message: 'Too many attempts' };
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 422,
+      json: async () => errBody,
+    }) as never;
+
+    const result = await verifyOtp('b1', '000000');
+    expect(result).toEqual(errBody);
+  });
+
+  it('returns error object on 422 (expired)', async () => {
+    vi.mocked(getToken).mockResolvedValueOnce('tok123');
+    const errBody = { error: 'expired', message: 'OTP has expired' };
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 422,
+      json: async () => errBody,
+    }) as never;
+
+    const result = await verifyOtp('b1', '000000');
+    expect(result).toEqual(errBody);
+  });
+});
+
+describe('signContract()', () => {
+  beforeEach(() => vi.resetAllMocks());
+
+  const mockContract: import('@car-rental/types').ContractDTO = {
+    id: 'c1',
+    bookingId: 'b1',
+    signedAt: '2025-01-01T12:00:00.000Z',
+    signatureName: 'Jane Doe',
+    termsVersion: '1.0',
+  };
+  const mockBooking: import('@car-rental/types').BookingDTO = {
+    id: 'b1',
+    status: 'picked-up',
+    vehicle: { id: 'v1', name: 'Toyota Camry' },
+    startDate: '2025-01-01',
+    endDate: '2025-01-04',
+    plan: 'daily',
+    baseAmount: 150,
+    taxAmount: 7.5,
+    serviceCharge: 10,
+    totalAmount: 167.5,
+    currency: 'USD',
+    createdAt: '2025-01-01T00:00:00.000Z',
+  };
+
+  it('POSTs signatureName+agree and returns contract+booking on 201', async () => {
+    vi.mocked(getToken).mockResolvedValueOnce('tok123');
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 201,
+      json: async () => ({ contract: mockContract, booking: mockBooking }),
+    }) as never;
+
+    const result = await signContract('b1', { signatureName: 'Jane Doe', agree: true });
+    expect(result).toEqual({ contract: mockContract, booking: mockBooking });
+    expect(global.fetch).toHaveBeenCalledWith(
+      expect.stringContaining('/api/bookings/b1/contract/sign'),
+      expect.objectContaining({
+        method: 'POST',
+        body: JSON.stringify({ signatureName: 'Jane Doe', agree: true }),
+      }),
+    );
+  });
+
+  it('sends Authorization header', async () => {
+    vi.mocked(getToken).mockResolvedValueOnce('tok-sign');
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 201,
+      json: async () => ({ contract: mockContract, booking: mockBooking }),
+    }) as never;
+    await signContract('b1', { signatureName: 'Jane Doe', agree: true });
+    expect(global.fetch).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.objectContaining({
+        headers: expect.objectContaining({ authorization: 'Bearer tok-sign' }),
+      }),
+    );
+  });
+
+  it('returns null on 422 (contract already signed)', async () => {
+    vi.mocked(getToken).mockResolvedValueOnce('tok123');
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 422,
+      json: async () => ({ error: 'contract_already_signed' }),
+    }) as never;
+    expect(await signContract('b1', { signatureName: 'Jane Doe', agree: true })).toBeNull();
+  });
+});
+
+describe('returnVehicle()', () => {
+  beforeEach(() => vi.resetAllMocks());
+
+  const mockBooking: import('@car-rental/types').BookingDTO = {
+    id: 'b1',
+    status: 'returned',
+    vehicle: { id: 'v1', name: 'Toyota Camry' },
+    startDate: '2025-01-01',
+    endDate: '2025-01-04',
+    plan: 'daily',
+    baseAmount: 150,
+    taxAmount: 7.5,
+    serviceCharge: 10,
+    totalAmount: 167.5,
+    currency: 'USD',
+    createdAt: '2025-01-01T00:00:00.000Z',
+  };
+
+  it('returns BookingDTO on 200', async () => {
+    vi.mocked(getToken).mockResolvedValueOnce('tok123');
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => mockBooking,
+    }) as never;
+
+    const result = await returnVehicle('b1');
+    expect(result).toEqual(mockBooking);
+  });
+
+  it('returns null on non-ok response', async () => {
+    vi.mocked(getToken).mockResolvedValueOnce('tok123');
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 422,
+      json: async () => ({ error: 'invalid_status' }),
+    }) as never;
+
+    const result = await returnVehicle('b1');
+    expect(result).toBeNull();
+  });
+
+  it('sends Authorization header to /api/bookings/:id/return', async () => {
+    vi.mocked(getToken).mockResolvedValueOnce('tok-return');
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => mockBooking,
+    }) as never;
+
+    await returnVehicle('b1');
+    expect(global.fetch).toHaveBeenCalledWith(
+      expect.stringContaining('/api/bookings/b1/return'),
+      expect.objectContaining({
+        headers: expect.objectContaining({ authorization: 'Bearer tok-return' }),
+      }),
+    );
   });
 });
