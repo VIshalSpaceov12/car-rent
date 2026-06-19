@@ -46,7 +46,7 @@ describe('issueOtp', () => {
     mockUpsert.mockResolvedValue({} as never);
     const booking = { id: 'b1', vehicleId: 'v1', providerId: 'p1' };
     const code = await issueOtp(booking);
-    const call = mockUpsert.mock.calls[0][0];
+    const call = mockUpsert.mock.calls[0]![0]!;
     const createData = call.create as Record<string, unknown>;
     expect(createData.codeHash).toBeTruthy();
     expect(createData.codeHash).not.toBe(code);
@@ -57,7 +57,7 @@ describe('issueOtp', () => {
     mockUpsert.mockResolvedValue({} as never);
     const booking = { id: 'b1', vehicleId: 'v1', providerId: 'p1' };
     await issueOtp(booking);
-    const call = mockUpsert.mock.calls[0][0];
+    const call = mockUpsert.mock.calls[0]![0]!;
     const createData = call.create as Record<string, unknown>;
     expect(createData.attempts).toBe(0);
     expect(createData.consumedAt).toBeNull();
@@ -68,7 +68,7 @@ describe('issueOtp', () => {
     const before = Date.now();
     await issueOtp({ id: 'b1', vehicleId: 'v1', providerId: 'p1' });
     const after = Date.now();
-    const call = mockUpsert.mock.calls[0][0];
+    const call = mockUpsert.mock.calls[0]![0]!;
     const createData = call.create as Record<string, unknown>;
     const exp = (createData.expiresAt as Date).getTime();
     const twentyFourHours = 24 * 60 * 60 * 1000;
@@ -104,7 +104,7 @@ describe('verifyOtp', () => {
     } as never);
     mockUpdate.mockResolvedValue({} as never);
     await verifyOtp('b1', '654321');
-    const updateCall = mockUpdate.mock.calls[0][0];
+    const updateCall = mockUpdate.mock.calls[0]![0]!;
     const updateData = updateCall.data as Record<string, unknown>;
     expect(updateData.consumedAt).toBeInstanceOf(Date);
   });
@@ -155,7 +155,7 @@ describe('verifyOtp', () => {
     } as never);
     mockUpdate.mockResolvedValue({} as never);
     await expect(verifyOtp('b1', '999999')).rejects.toMatchObject({ code: 'invalid' });
-    const updateCall = mockUpdate.mock.calls[0][0];
+    const updateCall = mockUpdate.mock.calls[0]![0]!;
     const updateData = updateCall.data as Record<string, unknown>;
     expect(updateData.attempts).toBe(3);
   });

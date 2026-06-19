@@ -18,17 +18,20 @@ const mockTx = vi.mocked(prisma.$transaction);
 
 function makeTxExecutor(contractRow: object, bookingRow: object) {
   // $transaction receives a callback; we execute it with a mock tx object
-  return mockTx.mockImplementation(async (fn: (tx: unknown) => Promise<unknown>) => {
-    const tx = {
-      contract: {
-        upsert: vi.fn().mockResolvedValue(contractRow),
-      },
-      booking: {
-        update: vi.fn().mockResolvedValue(bookingRow),
-      },
-    };
-    return fn(tx);
-  });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (mockTx as unknown as { mockImplementation: (fn: (...args: any[]) => any) => void }).mockImplementation(
+    async (fn: (tx: unknown) => Promise<unknown>) => {
+      const tx = {
+        contract: {
+          upsert: vi.fn().mockResolvedValue(contractRow),
+        },
+        booking: {
+          update: vi.fn().mockResolvedValue(bookingRow),
+        },
+      };
+      return fn(tx);
+    }
+  );
 }
 
 beforeEach(() => {
@@ -146,6 +149,6 @@ describe('signContract', () => {
     });
 
     // The booking returned should reflect the picked-up status
-    expect((result.booking as typeof bookingRow).status).toBe('PICKED_UP');
+    expect((result.booking as unknown as typeof bookingRow).status).toBe('PICKED_UP');
   });
 });
