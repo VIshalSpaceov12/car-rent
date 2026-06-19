@@ -31,6 +31,7 @@ function mockNoAuth() {
 
 let customerToken: string;
 let providerToken: string;
+let providerBToken: string;
 let bookingId: string;
 let otherCustomerBookingId: string;
 
@@ -97,6 +98,29 @@ beforeAll(async () => {
     },
   });
   otherCustomerBookingId = otherBooking.id;
+
+  // Create a provider-B in a separate tenant for cross-tenant isolation test
+  const providerBEntity = await prisma.provider.upsert({
+    where: { slug: 'provider-b-status-test' },
+    update: {},
+    create: {
+      name: 'Provider B Status Test',
+      slug: 'provider-b-status-test',
+      colors: {},
+    },
+  });
+  const providerBUser = await prisma.user.upsert({
+    where: { email: 'provider-b@booking-status-test.test' },
+    update: {},
+    create: {
+      email: 'provider-b@booking-status-test.test',
+      name: 'Provider B',
+      role: 'PROVIDER',
+      passwordHash: hash,
+      providerId: providerBEntity.id,
+    },
+  });
+  providerBToken = signJwt(providerBUser.id);
 });
 
 afterAll(async () => {
@@ -104,8 +128,16 @@ afterAll(async () => {
     where: { id: { in: [bookingId, otherCustomerBookingId].filter(Boolean) } },
   });
   await prisma.user.deleteMany({
-    where: { email: 'other-customer@booking-status-test.test' },
+    where: {
+      email: {
+        in: [
+          'other-customer@booking-status-test.test',
+          'provider-b@booking-status-test.test',
+        ],
+      },
+    },
   });
+  await prisma.provider.deleteMany({ where: { slug: 'provider-b-status-test' } });
   await prisma.$disconnect();
 });
 
@@ -170,5 +202,16 @@ describe('PATCH /api/bookings/[id]/status', () => {
     mockAuth(providerToken);
     const res = await PATCH(patchReq('nonexistent-id', 'confirmed'), { params: Promise.resolve({ id: 'nonexistent-id' }) });
     expect(res.status).toBe(404);
+  });
+
+  it('provider-B cannot PATCH a booking that belongs to provider-A (cross-tenant isolation)', async () => {
+    // Reset the booking to RESERVED so the status transition is valid if isolation were absent
+    await prisma.booking.update({ where: { id: bookingId }, data: { status: 'RESERVED' } });
+    mockAuth(providerBToken);
+    const res = await PATCH(patchReq(bookingId, 'confirmed'), { params: Promise.resolve({ id: bookingId }) });
+    expect(res.status).toBe(403);
+    // Confirm the booking status was NOT changed in the DB
+    const db = await prisma.booking.findUnique({ where: { id: bookingId } });
+    expect(db!.status).toBe('RESERVED');
   });
 });

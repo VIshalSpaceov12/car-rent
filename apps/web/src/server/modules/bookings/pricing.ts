@@ -10,9 +10,14 @@ export class PricingError extends Error {
   }
 }
 
-/** Round to exactly 2 decimal places using integer-cent math to avoid float drift. */
-function round2(value: number): number {
-  return Math.round(value * 100) / 100;
+/** Convert a number to integer cents, rounding half-up. */
+function toCents(value: number): number {
+  return Math.round(value * 100);
+}
+
+/** Convert integer cents back to a 2-decimal-place number. */
+function fromCents(cents: number): number {
+  return cents / 100;
 }
 
 export interface ComputeQuoteParams {
@@ -57,10 +62,17 @@ export function computeQuote(params: ComputeQuoteParams): BookingQuote {
   const planMultiplier = planMultipliers[plan] ?? 1;
   const seasonalMultiplier = 1;
 
-  const subtotal = round2(vehiclePricePerDay * days * planMultiplier * seasonalMultiplier);
-  const serviceCharge = round2(subtotal * serviceChargePct / 100);
-  const taxAmount = round2((subtotal + serviceCharge) * taxRatePct / 100);
-  const total = round2(subtotal + serviceCharge + taxAmount);
+  // All intermediate calculations in integer cents to avoid IEEE-754 drift.
+  const baseRateCents = toCents(vehiclePricePerDay);
+  const subtotalCents = Math.round(baseRateCents * days * planMultiplier * seasonalMultiplier);
+  const serviceChargeCents = Math.round(subtotalCents * serviceChargePct / 100);
+  const taxAmountCents = Math.round((subtotalCents + serviceChargeCents) * taxRatePct / 100);
+  const totalCents = subtotalCents + serviceChargeCents + taxAmountCents;
+
+  const subtotal = fromCents(subtotalCents);
+  const serviceCharge = fromCents(serviceChargeCents);
+  const taxAmount = fromCents(taxAmountCents);
+  const total = fromCents(totalCents);
 
   return {
     days,

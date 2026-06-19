@@ -70,6 +70,10 @@ export async function POST(req: Request) {
 
   if (!vehicle) return NextResponse.json({ error: 'vehicle_not_found' }, { status: 404 });
 
+  if (vehicle.status !== 'ACTIVE') {
+    return NextResponse.json({ error: 'vehicle_not_available' }, { status: 422 });
+  }
+
   const settings = vehicle.provider.businessSettings;
   const planMultipliers = (settings?.planMultipliers ?? { daily: 1, weekly: 0.9, monthly: 0.8, 'long-term': 0.7 }) as Record<string, number>;
 

@@ -34,6 +34,7 @@ let providerToken: string;
 let vehicleId: string;
 let vehicleProviderId: string;
 let createdBookingId: string;
+let maintenanceVehicleId: string;
 
 beforeAll(async () => {
   const customer = await prisma.user.findUnique({ where: { email: 'customer@demo.test' } });
@@ -51,11 +52,31 @@ beforeAll(async () => {
   });
   if (!vehicle) throw new Error('No ACTIVE vehicle seeded for drivehub provider');
   vehicleId = vehicle.id;
+
+  // Create a MAINTENANCE vehicle to test the unavailability guard
+  const category = await prisma.vehicleCategory.findFirst({ where: { providerId: vehicleProviderId } });
+  if (!category) throw new Error('No vehicle category seeded for provider');
+  const maintenanceVehicle = await prisma.vehicle.create({
+    data: {
+      providerId: vehicleProviderId,
+      categoryId: category.id,
+      name: 'Test Maintenance Vehicle',
+      status: 'MAINTENANCE',
+      pricePerDay: 100,
+      transmission: 'AUTOMATIC',
+      fuelType: 'PETROL',
+      year: 2023,
+    },
+  });
+  maintenanceVehicleId = maintenanceVehicle.id;
 });
 
 afterAll(async () => {
   if (createdBookingId) {
     await prisma.booking.delete({ where: { id: createdBookingId } }).catch(() => {});
+  }
+  if (maintenanceVehicleId) {
+    await prisma.vehicle.delete({ where: { id: maintenanceVehicleId } }).catch(() => {});
   }
   await prisma.$disconnect();
 });
@@ -136,6 +157,20 @@ describe('POST /api/bookings — create booking', () => {
     const req = authedReq('POST', 'http://localhost/api/bookings', { vehicleId });
     const res = await POST(req);
     expect(res.status).toBe(400);
+  });
+
+  it('returns 422 when vehicle is not ACTIVE (MAINTENANCE)', async () => {
+    mockAuth(customerToken);
+    const req = authedReq('POST', 'http://localhost/api/bookings', {
+      vehicleId: maintenanceVehicleId,
+      startDate: '2025-06-01',
+      endDate: '2025-06-04',
+      plan: 'daily',
+    });
+    const res = await POST(req);
+    expect(res.status).toBe(422);
+    const body = await res.json();
+    expect(body.error).toBe('vehicle_not_available');
   });
 });
 
