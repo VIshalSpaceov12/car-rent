@@ -10,6 +10,7 @@ import {
 } from '@car-rental/types';
 import { assertTransition, LifecycleError } from '@/server/modules/bookings/lifecycle';
 import { bookingToDTO } from '@/server/mappers';
+import { publishBookingStatus } from '@/server/realtime/publishBookingStatus';
 
 const BOOKING_INCLUDE = {
   vehicle: { select: { id: true, name: true } },
@@ -85,6 +86,8 @@ export async function POST(
 
     return { inspection: insp, booking: b };
   });
+
+  publishBookingStatus(updatedBooking);
 
   return NextResponse.json(
     {

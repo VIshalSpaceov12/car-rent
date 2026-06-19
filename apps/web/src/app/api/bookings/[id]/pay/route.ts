@@ -11,6 +11,7 @@ import {
 import { resolveOutcome } from '@/server/modules/payments/payment';
 import { confirmAfterPayment, LifecycleError } from '@/server/modules/bookings/lifecycle';
 import { bookingToDTO, paymentToDTO } from '@/server/mappers';
+import { publishBookingStatus } from '@/server/realtime/publishBookingStatus';
 
 const BOOKING_INCLUDE = {
   vehicle: { select: { id: true, name: true } },
@@ -132,6 +133,11 @@ export async function POST(
       { error: 'lifecycle_error', message: txResult.lifecycleError },
       { status: 422 }
     );
+  }
+
+  // Only publish if the booking status actually changed (i.e. confirmsBooking was true)
+  if (confirmsBooking) {
+    publishBookingStatus(txResult.b);
   }
 
   return NextResponse.json(

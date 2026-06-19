@@ -4,6 +4,7 @@ import { verifySession, requireRole, tenantScope } from '@/server/auth/dal';
 import { bookingStatusFromDb, bookingStatusToDb } from '@car-rental/types';
 import { assertTransition, LifecycleError } from '@/server/modules/bookings/lifecycle';
 import { bookingToDTO } from '@/server/mappers';
+import { publishBookingStatus } from '@/server/realtime/publishBookingStatus';
 
 const BOOKING_INCLUDE = {
   vehicle: { select: { id: true, name: true } },
@@ -53,6 +54,8 @@ export async function POST(
     data: { status: bookingStatusToDb('vehicle-prepared') as 'VEHICLE_PREPARED' },
     include: BOOKING_INCLUDE,
   });
+
+  publishBookingStatus(updated);
 
   return NextResponse.json(bookingToDTO(updated), { status: 201 });
 }

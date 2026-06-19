@@ -4,6 +4,7 @@ import { verifySession } from '@/server/auth/dal';
 import { contractSignSchema, bookingStatusFromDb } from '@car-rental/types';
 import { signContract, ContractError } from '@/server/modules/otp/contract';
 import { bookingToDTO } from '@/server/mappers';
+import { publishBookingStatus } from '@/server/realtime/publishBookingStatus';
 
 export async function POST(
   req: Request,
@@ -46,6 +47,8 @@ export async function POST(
       vehicleId: booking.vehicleId,
       currentStatus,
     });
+
+    publishBookingStatus(updatedBooking);
 
     return NextResponse.json(
       {
