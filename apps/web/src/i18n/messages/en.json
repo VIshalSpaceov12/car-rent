@@ -8,10 +8,99 @@
   },
   "dashboard": {
     "title": "Provider dashboard",
-    "soon": "Fleet, bookings, branches land in Phase 1+."
+    "soon": "Fleet, bookings, branches land in Phase 1+.",
+    "nav": {
+      "fleet": "Fleet",
+      "categories": "Categories",
+      "branches": "Branches"
+    }
   },
   "admin": {
     "title": "Platform admin",
     "soon": "All-tenant oversight lands in Phase 7."
+  },
+  "fleet": {
+    "title": "Fleet",
+    "addVehicle": "Add vehicle",
+    "noVehicles": "No vehicles yet.",
+    "columns": {
+      "name": "Name",
+      "category": "Category",
+      "transmission": "Transmission",
+      "fuel": "Fuel",
+      "pricePerDay": "Price / day",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "edit": "Edit",
+    "delete": "Delete",
+    "deleteConfirm": "Delete this vehicle?",
+    "form": {
+      "titleNew": "Add vehicle",
+      "titleEdit": "Edit vehicle",
+      "name": "Name",
+      "category": "Category",
+      "branch": "Branch",
+      "make": "Make",
+      "model": "Model",
+      "year": "Year",
+      "transmission": "Transmission",
+      "fuelType": "Fuel type",
+      "status": "Status",
+      "pricePerDay": "Price per day",
+      "seats": "Seats",
+      "imageUrl": "Image URL",
+      "description": "Description",
+      "save": "Save",
+      "saving": "Saving…",
+      "cancel": "Cancel",
+      "selectCategory": "Select category",
+      "selectBranch": "No branch",
+      "selectTransmission": "Select transmission",
+      "selectFuelType": "Select fuel type",
+      "selectStatus": "Select status",
+      "errorSave": "Failed to save. Check your inputs."
+    }
+  },
+  "categories": {
+    "title": "Categories",
+    "addCategory": "Add category",
+    "noCategories": "No categories yet.",
+    "columns": {
+      "name": "Name",
+      "slug": "Slug",
+      "actions": "Actions"
+    },
+    "delete": "Delete",
+    "deleteConfirm": "Delete this category?",
+    "form": {
+      "name": "Name",
+      "slug": "Slug",
+      "slugHint": "Lowercase, hyphens only",
+      "add": "Add",
+      "adding": "Adding…",
+      "errorSave": "Failed to add. Check your inputs."
+    }
+  },
+  "branches": {
+    "title": "Branches",
+    "addBranch": "Add branch",
+    "noBranches": "No branches yet.",
+    "columns": {
+      "name": "Name",
+      "address": "Address",
+      "phone": "Phone",
+      "actions": "Actions"
+    },
+    "delete": "Delete",
+    "deleteConfirm": "Delete this branch?",
+    "form": {
+      "name": "Name",
+      "address": "Address",
+      "phone": "Phone (optional)",
+      "add": "Add",
+      "adding": "Adding…",
+      "errorSave": "Failed to add. Check your inputs."
+    }
   }
 }
