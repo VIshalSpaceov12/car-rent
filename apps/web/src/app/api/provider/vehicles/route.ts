@@ -13,6 +13,10 @@ export async function GET() {
     return NextResponse.json({ error: 'forbidden' }, { status: 403 });
   }
 
+  if (user.role !== 'admin' && !user.providerId) {
+    return NextResponse.json({ error: 'provider_not_associated' }, { status: 422 });
+  }
+
   const vehicles = await prisma.vehicle.findMany({
     where: tenantScope(user),
     include: { category: true, branch: true },
@@ -47,6 +51,16 @@ export async function POST(req: Request) {
   const resolvedProviderId = user.providerId ?? (user.role === 'admin' ? null : null);
   if (!resolvedProviderId) {
     return NextResponse.json({ error: 'provider_not_associated' }, { status: 422 });
+  }
+
+  // Validate that categoryId belongs to the session tenant (prevents cross-tenant association)
+  const cat = await prisma.vehicleCategory.findFirst({ where: { id: data.categoryId, providerId: resolvedProviderId } });
+  if (!cat) return NextResponse.json({ error: 'category_not_found' }, { status: 422 });
+
+  // Validate branchId if supplied
+  if (data.branchId) {
+    const br = await prisma.branch.findFirst({ where: { id: data.branchId, providerId: resolvedProviderId } });
+    if (!br) return NextResponse.json({ error: 'branch_not_found' }, { status: 422 });
   }
 
   const vehicle = await prisma.vehicle.create({

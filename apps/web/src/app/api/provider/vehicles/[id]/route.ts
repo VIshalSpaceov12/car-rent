@@ -39,12 +39,6 @@ export async function PATCH(req: Request, { params }: Params) {
     return NextResponse.json({ error: 'forbidden' }, { status: 403 });
   }
 
-  // Verify ownership
-  const existing = await prisma.vehicle.findFirst({
-    where: { id, ...tenantScope(user) },
-  });
-  if (!existing) return NextResponse.json({ error: 'not_found' }, { status: 404 });
-
   const body = await req.json().catch(() => null);
   const parsed = vehicleUpdateSchema.safeParse(body);
   if (!parsed.success) {
@@ -52,7 +46,13 @@ export async function PATCH(req: Request, { params }: Params) {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { providerId: _pId, transmission, fuelType, status, ...rest } = parsed.data as typeof parsed.data & { providerId?: string };
+  const { providerId: _pId, transmission, fuelType, status, categoryId: newCategoryId, ...rest } = parsed.data as typeof parsed.data & { providerId?: string; categoryId?: string };
+
+  // If categoryId is being updated, verify it belongs to the session tenant
+  if (newCategoryId) {
+    const cat = await prisma.vehicleCategory.findFirst({ where: { id: newCategoryId, ...tenantScope(user) } });
+    if (!cat) return NextResponse.json({ error: 'category_not_found' }, { status: 422 });
+  }
 
   type UpdateData = {
     categoryId?: string;
@@ -70,15 +70,23 @@ export async function PATCH(req: Request, { params }: Params) {
     description?: string;
   };
   const updateData: UpdateData = { ...rest };
+  if (newCategoryId) updateData.categoryId = newCategoryId;
   if (transmission) updateData.transmission = transmissionToDb(transmission) as 'AUTOMATIC' | 'MANUAL';
   if (fuelType) updateData.fuelType = fuelTypeToDb(fuelType) as 'PETROL' | 'DIESEL' | 'ELECTRIC' | 'HYBRID';
   if (status) updateData.status = vehicleStatusToDb(status) as 'ACTIVE' | 'MAINTENANCE' | 'RETIRED';
 
-  const vehicle = await prisma.vehicle.update({
-    where: { id },
+  // Atomic tenant-scoped update — where includes providerId so cross-tenant writes are impossible
+  const result = await prisma.vehicle.updateMany({
+    where: { id, ...tenantScope(user) },
     data: updateData,
+  });
+  if (result.count === 0) return NextResponse.json({ error: 'not_found' }, { status: 404 });
+
+  const vehicle = await prisma.vehicle.findFirst({
+    where: { id },
     include: { category: true, branch: true },
   });
+  if (!vehicle) return NextResponse.json({ error: 'not_found' }, { status: 404 });
 
   return NextResponse.json({
     ...vehicleToDTO(vehicle),
@@ -97,11 +105,8 @@ export async function DELETE(_req: Request, { params }: Params) {
     return NextResponse.json({ error: 'forbidden' }, { status: 403 });
   }
 
-  const existing = await prisma.vehicle.findFirst({
-    where: { id, ...tenantScope(user) },
-  });
-  if (!existing) return NextResponse.json({ error: 'not_found' }, { status: 404 });
-
-  await prisma.vehicle.delete({ where: { id } });
+  // Atomic tenant-scoped delete — cross-tenant deletes return count=0
+  const result = await prisma.vehicle.deleteMany({ where: { id, ...tenantScope(user) } });
+  if (result.count === 0) return NextResponse.json({ error: 'not_found' }, { status: 404 });
   return NextResponse.json({ deleted: true });
 }

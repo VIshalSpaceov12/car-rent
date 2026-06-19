@@ -16,21 +16,21 @@ export async function PATCH(req: Request, { params }: Params) {
     return NextResponse.json({ error: 'forbidden' }, { status: 403 });
   }
 
-  const existing = await prisma.branch.findFirst({
-    where: { id, ...tenantScope(user) },
-  });
-  if (!existing) return NextResponse.json({ error: 'not_found' }, { status: 404 });
-
   const body = await req.json().catch(() => null);
   const parsed = branchCreateSchema.partial().safeParse(body);
   if (!parsed.success) {
     return NextResponse.json({ error: 'invalid_request', issues: parsed.error.issues }, { status: 400 });
   }
 
-  const branch = await prisma.branch.update({
-    where: { id },
+  // Atomic tenant-scoped update — cross-tenant writes return count=0
+  const result = await prisma.branch.updateMany({
+    where: { id, ...tenantScope(user) },
     data: parsed.data,
   });
+  if (result.count === 0) return NextResponse.json({ error: 'not_found' }, { status: 404 });
+
+  const branch = await prisma.branch.findFirst({ where: { id } });
+  if (!branch) return NextResponse.json({ error: 'not_found' }, { status: 404 });
 
   return NextResponse.json(branchToDTO(branch));
 }
@@ -45,11 +45,8 @@ export async function DELETE(_req: Request, { params }: Params) {
     return NextResponse.json({ error: 'forbidden' }, { status: 403 });
   }
 
-  const existing = await prisma.branch.findFirst({
-    where: { id, ...tenantScope(user) },
-  });
-  if (!existing) return NextResponse.json({ error: 'not_found' }, { status: 404 });
-
-  await prisma.branch.delete({ where: { id } });
+  // Atomic tenant-scoped delete — cross-tenant deletes return count=0
+  const result = await prisma.branch.deleteMany({ where: { id, ...tenantScope(user) } });
+  if (result.count === 0) return NextResponse.json({ error: 'not_found' }, { status: 404 });
   return NextResponse.json({ deleted: true });
 }

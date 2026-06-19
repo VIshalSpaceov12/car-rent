@@ -13,6 +13,10 @@ export async function GET() {
     return NextResponse.json({ error: 'forbidden' }, { status: 403 });
   }
 
+  if (user.role !== 'admin' && !user.providerId) {
+    return NextResponse.json({ error: 'provider_not_associated' }, { status: 422 });
+  }
+
   const branches = await prisma.branch.findMany({
     where: tenantScope(user),
     orderBy: { name: 'asc' },
