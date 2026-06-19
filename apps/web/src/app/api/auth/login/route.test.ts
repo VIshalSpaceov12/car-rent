@@ -23,4 +23,8 @@ describe('POST /api/auth/login', () => {
     expect(body.token).toBeTruthy();
     expect(body.user.role).toBe('customer');
   });
+  it('returns 400 on an invalid body', async () => {
+    const res = await POST(req({}));
+    expect(res.status).toBe(400);
+  });
 });

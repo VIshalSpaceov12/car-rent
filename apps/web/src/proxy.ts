@@ -5,7 +5,7 @@ const PROTECTED = ['/dashboard', '/admin'];
 
 export function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
-  if (PROTECTED.some((p) => pathname.includes(p)) && !req.cookies.get(SESSION_COOKIE)) {
+  if (PROTECTED.some((p) => pathname === p || pathname.startsWith(p + '/')) && !req.cookies.get(SESSION_COOKIE)) {
     return NextResponse.redirect(new URL('/login', req.url));
   }
   return NextResponse.next();
