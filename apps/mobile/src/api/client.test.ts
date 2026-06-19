@@ -1,7 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 vi.mock('@/auth/storage', () => ({ getToken: vi.fn().mockResolvedValue(null) }));
-import { login, me, listVehicles, getVehicle, quoteBooking, createBooking, listBookings, payBooking, verifyOtp, signContract, returnVehicle } from './client';
+import {
+  login, me, listVehicles, getVehicle, quoteBooking, createBooking, listBookings,
+  payBooking, verifyOtp, signContract, returnVehicle,
+  rebookBooking, getLoyalty,
+} from './client';
 import { getToken } from '@/auth/storage';
 
 describe('mobile api client', () => {
@@ -463,5 +467,179 @@ describe('returnVehicle()', () => {
         headers: expect.objectContaining({ authorization: 'Bearer tok-return' }),
       }),
     );
+  });
+});
+
+describe('rebookBooking()', () => {
+  beforeEach(() => vi.resetAllMocks());
+
+  const mockNewBooking: import('@car-rental/types').BookingDTO = {
+    id: 'b2',
+    status: 'reserved',
+    vehicle: { id: 'v1', name: 'Toyota Camry' },
+    startDate: '2025-02-01',
+    endDate: '2025-02-04',
+    plan: 'daily',
+    baseAmount: 150,
+    taxAmount: 7.5,
+    serviceCharge: 10,
+    totalAmount: 167.5,
+    currency: 'USD',
+    createdAt: '2025-02-01T00:00:00.000Z',
+  };
+
+  it('POSTs to /api/bookings/:id/rebook and returns new BookingDTO on 200', async () => {
+    vi.mocked(getToken).mockResolvedValueOnce('tok123');
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => mockNewBooking,
+    }) as never;
+
+    const result = await rebookBooking('b1');
+    expect(result).toEqual(mockNewBooking);
+    expect(global.fetch).toHaveBeenCalledWith(
+      expect.stringContaining('/api/bookings/b1/rebook'),
+      expect.objectContaining({ method: 'POST' }),
+    );
+  });
+
+  it('returns null on non-ok response', async () => {
+    vi.mocked(getToken).mockResolvedValueOnce('tok123');
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 422,
+      json: async () => ({ error: 'not_completed' }),
+    }) as never;
+
+    const result = await rebookBooking('b1');
+    expect(result).toBeNull();
+  });
+
+  it('sends Authorization header', async () => {
+    vi.mocked(getToken).mockResolvedValueOnce('tok-rebook');
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => mockNewBooking,
+    }) as never;
+
+    await rebookBooking('b1');
+    expect(global.fetch).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.objectContaining({
+        headers: expect.objectContaining({ authorization: 'Bearer tok-rebook' }),
+      }),
+    );
+  });
+});
+
+describe('getLoyalty()', () => {
+  beforeEach(() => vi.resetAllMocks());
+
+  const mockLoyalty = {
+    account: {
+      id: 'la1',
+      userId: 'u1',
+      points: 250,
+      createdAt: '2025-01-01T00:00:00.000Z',
+      updatedAt: '2025-01-10T00:00:00.000Z',
+    },
+    entries: [
+      {
+        id: 'le1',
+        userId: 'u1',
+        delta: 100,
+        reason: 'Rental completed',
+        bookingId: 'b1',
+        createdAt: '2025-01-10T00:00:00.000Z',
+      },
+    ],
+  };
+
+  it('GETs /api/loyalty and returns loyalty data on 200', async () => {
+    vi.mocked(getToken).mockResolvedValueOnce('tok123');
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => mockLoyalty,
+    }) as never;
+
+    const result = await getLoyalty();
+    expect(result).toEqual(mockLoyalty);
+    expect(global.fetch).toHaveBeenCalledWith(
+      expect.stringContaining('/api/loyalty'),
+      expect.any(Object),
+    );
+  });
+
+  it('returns null on non-ok response', async () => {
+    vi.mocked(getToken).mockResolvedValueOnce('tok123');
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 404,
+      json: async () => ({}),
+    }) as never;
+
+    expect(await getLoyalty()).toBeNull();
+  });
+
+  it('sends Authorization header', async () => {
+    vi.mocked(getToken).mockResolvedValueOnce('tok-loyalty');
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => mockLoyalty,
+    }) as never;
+
+    await getLoyalty();
+    expect(global.fetch).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.objectContaining({
+        headers: expect.objectContaining({ authorization: 'Bearer tok-loyalty' }),
+      }),
+    );
+  });
+});
+
+describe('quoteBooking() with discountCode', () => {
+  beforeEach(() => vi.resetAllMocks());
+
+  it('includes discountCode in the request body when provided', async () => {
+    vi.mocked(getToken).mockResolvedValueOnce('tok123');
+    const mockQuote = {
+      days: 3, baseRatePerDay: 50, planMultiplier: 1, seasonalMultiplier: 1,
+      subtotal: 120, taxRatePct: 5, taxAmount: 6, serviceCharge: 10, total: 136, currency: 'USD',
+    };
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true, status: 200, json: async () => mockQuote,
+    }) as never;
+
+    const req = { vehicleId: 'v1', startDate: '2025-01-01', endDate: '2025-01-04', plan: 'daily' as const };
+    await quoteBooking(req, 'SAVE20');
+
+    const body = JSON.parse(
+      (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0]?.[1]?.body as string,
+    ) as Record<string, unknown>;
+    expect(body.discountCode).toBe('SAVE20');
+  });
+
+  it('omits discountCode when not provided', async () => {
+    vi.mocked(getToken).mockResolvedValueOnce('tok123');
+    const mockQuote = {
+      days: 3, baseRatePerDay: 50, planMultiplier: 1, seasonalMultiplier: 1,
+      subtotal: 150, taxRatePct: 5, taxAmount: 7.5, serviceCharge: 10, total: 167.5, currency: 'USD',
+    };
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true, status: 200, json: async () => mockQuote,
+    }) as never;
+
+    const req = { vehicleId: 'v1', startDate: '2025-01-01', endDate: '2025-01-04', plan: 'daily' as const };
+    await quoteBooking(req);
+
+    const body = JSON.parse(
+      (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0]?.[1]?.body as string,
+    ) as Record<string, unknown>;
+    expect(body.discountCode).toBeUndefined();
   });
 });

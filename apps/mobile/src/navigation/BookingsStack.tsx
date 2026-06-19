@@ -7,10 +7,12 @@ import { PaymentConfirmationScreen } from '@/screens/PaymentConfirmation';
 import { PickupOtpScreen } from '@/screens/PickupOtp';
 import { ContractScreen } from '@/screens/Contract';
 import { PickupSuccessScreen } from '@/screens/PickupSuccess';
+import { ReceiptScreen } from '@/screens/Receipt';
 import { i18n } from '@/i18n';
 
 export type BookingsStackParamList = {
   BookingsList: undefined;
+  Receipt: { booking: BookingDTO };
   Checkout: { booking: BookingDTO };
   PaymentConfirmation: { booking: BookingDTO };
   PickupOtp: { booking: BookingDTO };
@@ -39,6 +41,17 @@ export function BookingsStack() {
           <BookingsScreen
             onPayBooking={(booking) => navigation.navigate('Checkout', { booking })}
             onPickup={(booking) => navigation.navigate('PickupOtp', { booking })}
+            onViewReceipt={(booking) => navigation.navigate('Receipt', { booking })}
+          />
+        )}
+      </Stack.Screen>
+
+      <Stack.Screen name="Receipt" options={{ title: i18n.t('receipt.title') }}>
+        {({ route, navigation }) => (
+          <ReceiptScreen
+            booking={route.params.booking}
+            onRebooked={(newBooking) => navigation.replace('Checkout', { booking: newBooking })}
+            onBack={() => navigation.goBack()}
           />
         )}
       </Stack.Screen>

@@ -11,6 +11,12 @@ import type {
   PaymentMethod,
   ContractDTO,
   ContractSignInput,
+  LoyaltyAccountDTO,
+  LoyaltyEntryDTO,
+  AddressDTO,
+  AddressCreateInput,
+  SupportTicketDTO,
+  SupportTicketCreateInput,
 } from '@car-rental/types';
 import { getToken } from '@/auth/storage';
 
@@ -65,18 +71,30 @@ export async function getVehicle(id: string): Promise<VehicleDTO | null> {
   return res.ok ? ((await res.json()) as VehicleDTO) : null;
 }
 
-export async function quoteBooking(req: BookingQuoteRequest): Promise<BookingQuote | null> {
+export async function quoteBooking(
+  req: BookingQuoteRequest,
+  discountCode?: string,
+): Promise<BookingQuote | null> {
+  const body: BookingQuoteRequest & { discountCode?: string } = discountCode
+    ? { ...req, discountCode }
+    : req;
   const res = await authedFetch('/api/bookings/quote', {
     method: 'POST',
-    body: JSON.stringify(req),
+    body: JSON.stringify(body),
   });
   return res.ok ? ((await res.json()) as BookingQuote) : null;
 }
 
-export async function createBooking(req: BookingCreateRequest): Promise<BookingDTO | null> {
+export async function createBooking(
+  req: BookingCreateRequest,
+  discountCode?: string,
+): Promise<BookingDTO | null> {
+  const body: BookingCreateRequest & { discountCode?: string } = discountCode
+    ? { ...req, discountCode }
+    : req;
   const res = await authedFetch('/api/bookings', {
     method: 'POST',
-    body: JSON.stringify(req),
+    body: JSON.stringify(body),
   });
   return res.ok ? ((await res.json()) as BookingDTO) : null;
 }
@@ -177,4 +195,86 @@ export async function returnVehicle(bookingId: string): Promise<BookingDTO | nul
     method: 'POST',
   });
   return res.ok ? ((await res.json()) as BookingDTO) : null;
+}
+
+/**
+ * Re-book a past booking (completed/cancelled). Creates a new reserved booking
+ * cloned from the source booking's vehicle/dates/plan.
+ * Returns the new BookingDTO or null on error.
+ */
+export async function rebookBooking(bookingId: string): Promise<BookingDTO | null> {
+  const res = await authedFetch(`/api/bookings/${bookingId}/rebook`, {
+    method: 'POST',
+  });
+  return res.ok ? ((await res.json()) as BookingDTO) : null;
+}
+
+// ---- Loyalty ---------------------------------------------------------------
+
+export interface LoyaltyData {
+  account: LoyaltyAccountDTO;
+  entries: LoyaltyEntryDTO[];
+}
+
+/**
+ * Fetches the current customer's loyalty account + entry history.
+ * Returns null if not found or on error.
+ */
+export async function getLoyalty(): Promise<LoyaltyData | null> {
+  const res = await authedFetch('/api/loyalty');
+  return res.ok ? ((await res.json()) as LoyaltyData) : null;
+}
+
+// ---- Saved Addresses -------------------------------------------------------
+
+/** List all saved addresses for the current customer. */
+export async function listAddresses(): Promise<AddressDTO[]> {
+  const res = await authedFetch('/api/addresses');
+  return res.ok ? ((await res.json()) as AddressDTO[]) : [];
+}
+
+/** Create a new saved address. */
+export async function createAddress(input: AddressCreateInput): Promise<AddressDTO | null> {
+  const res = await authedFetch('/api/addresses', {
+    method: 'POST',
+    body: JSON.stringify(input),
+  });
+  return res.ok ? ((await res.json()) as AddressDTO) : null;
+}
+
+/** Update an existing saved address. */
+export async function updateAddress(
+  id: string,
+  input: Partial<AddressCreateInput>,
+): Promise<AddressDTO | null> {
+  const res = await authedFetch(`/api/addresses/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(input),
+  });
+  return res.ok ? ((await res.json()) as AddressDTO) : null;
+}
+
+/** Delete a saved address. Returns true on success. */
+export async function deleteAddress(id: string): Promise<boolean> {
+  const res = await authedFetch(`/api/addresses/${id}`, { method: 'DELETE' });
+  return res.ok;
+}
+
+// ---- Support Tickets -------------------------------------------------------
+
+/** Create a new support ticket for the current customer. */
+export async function createSupportTicket(
+  input: SupportTicketCreateInput,
+): Promise<SupportTicketDTO | null> {
+  const res = await authedFetch('/api/support', {
+    method: 'POST',
+    body: JSON.stringify(input),
+  });
+  return res.ok ? ((await res.json()) as SupportTicketDTO) : null;
+}
+
+/** List support tickets for the current customer. */
+export async function listSupportTickets(): Promise<SupportTicketDTO[]> {
+  const res = await authedFetch('/api/support');
+  return res.ok ? ((await res.json()) as SupportTicketDTO[]) : [];
 }
