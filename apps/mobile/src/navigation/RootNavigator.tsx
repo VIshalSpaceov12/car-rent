@@ -27,7 +27,9 @@ export function RootNavigator() {
     });
   }, []);
 
-  const handleSuccess = useCallback(() => setToken('auth'), []);
+  const handleSuccess = useCallback(async () => {
+    setToken(await getToken());
+  }, []);
   const handleSignOut = useCallback(() => setToken(null), []);
 
   if (!ready) return null;
