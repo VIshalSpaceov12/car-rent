@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, Image, ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, Image, ActivityIndicator, Pressable } from 'react-native';
 import { useTheme } from '@car-rental/tokens';
 import type { VehicleDTO } from '@car-rental/types';
 import { getVehicle } from '@/api/client';
@@ -7,9 +7,10 @@ import { i18n } from '@/i18n';
 
 type Props = {
   vehicleId: string;
+  onBook?: (vehicleId: string, vehicleName: string, pricePerDay: number) => void;
 };
 
-export function VehicleDetailScreen({ vehicleId }: Props) {
+export function VehicleDetailScreen({ vehicleId, onBook }: Props) {
   const theme = useTheme();
   const [vehicle, setVehicle] = useState<VehicleDTO | null>(null);
   const [loading, setLoading] = useState(true);
@@ -131,6 +132,21 @@ export function VehicleDetailScreen({ vehicleId }: Props) {
             </Text>
           </View>
         ) : null}
+
+        {onBook ? (
+          <Pressable
+            style={[
+              styles.bookButton,
+              { backgroundColor: theme.color.primary, borderRadius: theme.radius.input, marginTop: theme.spacing.md },
+            ]}
+            onPress={() => onBook(vehicle.id, vehicle.name, vehicle.pricePerDay)}
+            accessibilityRole="button"
+          >
+            <Text style={{ color: theme.color.onPrimary, fontSize: theme.typography.body.fontSize, fontWeight: '700' }}>
+              {i18n.t('vehicle.bookNow')}
+            </Text>
+          </Pressable>
+        ) : null}
       </View>
     </ScrollView>
   );
@@ -162,5 +178,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingVertical: 6,
+  },
+  bookButton: {
+    paddingVertical: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
