@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { assertTransition, LifecycleError } from './lifecycle';
+import { assertTransition, confirmAfterPayment, LifecycleError } from './lifecycle';
 
 describe('assertTransition', () => {
   it('allows a legal chain: reserved->confirmed->vehicle-prepared->picked-up->returned->completed', () => {
@@ -61,5 +61,19 @@ describe('assertTransition', () => {
 
   it('throws when customer tries to cancel from vehicle-prepared (not allowed)', () => {
     expect(() => assertTransition('vehicle-prepared', 'cancelled', 'customer')).toThrow(LifecycleError);
+  });
+});
+
+describe('confirmAfterPayment', () => {
+  it('does not throw when booking is reserved', () => {
+    expect(() => confirmAfterPayment('reserved')).not.toThrow();
+  });
+
+  it('throws LifecycleError when booking is already confirmed (idempotency guard)', () => {
+    expect(() => confirmAfterPayment('confirmed')).toThrow(LifecycleError);
+  });
+
+  it('throws LifecycleError when booking is in a terminal cancelled state', () => {
+    expect(() => confirmAfterPayment('cancelled')).toThrow(LifecycleError);
   });
 });
