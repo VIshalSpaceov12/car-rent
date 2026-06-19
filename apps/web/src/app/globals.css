@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-@theme {
+@theme inline {
   --color-cr-primary: var(--color-primary);
   --color-cr-background: var(--color-background);
   --color-cr-surface: var(--color-surface);
@@ -15,8 +15,13 @@
   --spacing-cr-md: var(--space-md);
   --spacing-cr-lg: var(--space-lg);
   --spacing-cr-xl: var(--space-xl);
+  --spacing-cr-xxl: var(--space-xxl);
   --radius-cr-card: var(--radius-card);
   --radius-cr-input: var(--radius-input);
+  --radius-cr-sm: var(--radius-sm);
+  --radius-cr-md: var(--radius-md);
+  --radius-cr-lg: var(--radius-lg);
+  --radius-cr-pill: var(--radius-pill);
 }
 
 body {
