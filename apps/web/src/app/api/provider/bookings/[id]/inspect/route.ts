@@ -84,6 +84,31 @@ export async function POST(
       include: BOOKING_INCLUDE,
     });
 
+    // Award loyalty points on completion (idempotent: only if no entry exists yet)
+    const existingEntry = await tx.loyaltyEntry.findFirst({
+      where: { bookingId: id, userId: booking.customerId },
+    });
+
+    if (!existingEntry) {
+      const pointsEarned = Math.floor(Number(booking.totalAmount));
+      if (pointsEarned > 0) {
+        await tx.loyaltyEntry.create({
+          data: {
+            userId: booking.customerId,
+            delta: pointsEarned,
+            reason: `Completed rental #${id}`,
+            bookingId: id,
+          },
+        });
+
+        await tx.loyaltyAccount.upsert({
+          where: { userId: booking.customerId },
+          update: { points: { increment: pointsEarned } },
+          create: { userId: booking.customerId, points: pointsEarned },
+        });
+      }
+    }
+
     return { inspection: insp, booking: b };
   });
 

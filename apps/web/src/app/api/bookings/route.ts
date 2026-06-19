@@ -7,6 +7,7 @@ import {
 } from '@car-rental/types';
 import { computeQuote, PricingError } from '@/server/modules/bookings/pricing';
 import { bookingToDTO } from '@/server/mappers';
+import { z } from 'zod';
 
 const BOOKING_INCLUDE = {
   vehicle: { select: { id: true, name: true } },
@@ -56,12 +57,15 @@ export async function POST(req: Request) {
   }
 
   const body = await req.json().catch(() => null);
-  const parsed = bookingCreateRequestSchema.safeParse(body);
+  const createWithDiscountSchema = bookingCreateRequestSchema.extend({
+    discountCode: z.string().optional(),
+  });
+  const parsed = createWithDiscountSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json({ error: 'invalid_request', issues: parsed.error.issues }, { status: 400 });
   }
 
-  const { vehicleId, startDate, endDate, plan, pickupBranchId, dropoffBranchId } = parsed.data;
+  const { vehicleId, startDate, endDate, plan, pickupBranchId, dropoffBranchId, discountCode } = parsed.data;
 
   const vehicle = await prisma.vehicle.findUnique({
     where: { id: vehicleId },
@@ -97,6 +101,36 @@ export async function POST(req: Request) {
     throw err;
   }
 
+  // Apply discount server-side — never trust client amounts
+  let finalSubtotal = quote.subtotal;
+  let finalTax = quote.taxAmount;
+  let finalServiceCharge = quote.serviceCharge;
+  let finalTotal = quote.total;
+
+  if (discountCode) {
+    const discount = await prisma.discountCode.findFirst({
+      where: { code: discountCode, providerId: vehicle.providerId, active: true },
+    });
+
+    if (discount && !(discount.expiresAt && discount.expiresAt < new Date())) {
+      const subtotalCents = Math.round(quote.subtotal * 100);
+      let discountCents: number;
+      if (discount.kind === 'PERCENT') {
+        discountCents = Math.round(subtotalCents * Number(discount.value) / 100);
+      } else {
+        discountCents = Math.round(Number(discount.value) * 100);
+      }
+      discountCents = Math.min(discountCents, subtotalCents);
+      const discountedSubtotalCents = subtotalCents - discountCents;
+      const serviceChargeCents = Math.round(quote.serviceCharge * 100);
+      const taxCents = Math.round((discountedSubtotalCents + serviceChargeCents) * (quote.taxRatePct / 100));
+      finalSubtotal = discountedSubtotalCents / 100;
+      finalTax = taxCents / 100;
+      finalServiceCharge = serviceChargeCents / 100;
+      finalTotal = (discountedSubtotalCents + serviceChargeCents + taxCents) / 100;
+    }
+  }
+
   const booking = await prisma.booking.create({
     data: {
       providerId: vehicle.providerId,
@@ -108,10 +142,10 @@ export async function POST(req: Request) {
       endDate: new Date(endDate),
       plan: plan.toUpperCase().replace(/-/g, '_') as 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'LONG_TERM',
       status: bookingStatusToDb('reserved') as 'RESERVED',
-      baseAmount: quote.subtotal,
-      taxAmount: quote.taxAmount,
-      serviceCharge: quote.serviceCharge,
-      totalAmount: quote.total,
+      baseAmount: finalSubtotal,
+      taxAmount: finalTax,
+      serviceCharge: finalServiceCharge,
+      totalAmount: finalTotal,
       currency: quote.currency,
     },
     include: BOOKING_INCLUDE,
