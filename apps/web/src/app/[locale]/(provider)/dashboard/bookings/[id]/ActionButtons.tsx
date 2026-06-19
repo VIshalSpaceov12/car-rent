@@ -1,5 +1,6 @@
 'use client';
 import { useState, useTransition } from 'react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/ui/Button';
 import type { BookingStatus } from '@car-rental/types';
 
@@ -16,6 +17,7 @@ interface ActionButtonsProps {
 }
 
 export function ActionButtons({ actions, errorLabels }: ActionButtonsProps) {
+  const t = useTranslations('bookings');
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
@@ -39,12 +41,12 @@ export function ActionButtons({ actions, errorLabels }: ActionButtonsProps) {
             disabled={isPending}
             onClick={() => handleAction(action)}
           >
-            {isPending ? '…' : label}
+            {isPending ? t('action.pending') : label}
           </Button>
         ))}
       </div>
       {error && (
-        <p className="text-sm font-medium" style={{ color: 'var(--color-danger)' }}>
+        <p className="text-sm font-medium text-cr-danger">
           {error}
         </p>
       )}

@@ -101,7 +101,8 @@
   "bookings": {
     "title": "الحجوزات",
     "noBookings": "لا توجد حجوزات بعد.",
-    "backToList": "العودة إلى الحجوزات",
+    "backToList": "→ العودة إلى الحجوزات",
+    "dateSeparator": "←",
     "view": "عرض",
     "filter": {
       "all": "الكل"
@@ -132,6 +133,7 @@
       "long-term": "طويل الأمد"
     },
     "action": {
+      "pending": "…",
       "confirmed": "قبول",
       "rejected": "رفض",
       "cancelled": "إلغاء",

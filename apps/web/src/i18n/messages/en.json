@@ -101,7 +101,8 @@
   "bookings": {
     "title": "Bookings",
     "noBookings": "No bookings yet.",
-    "backToList": "Back to bookings",
+    "backToList": "← Back to bookings",
+    "dateSeparator": "→",
     "view": "View",
     "filter": {
       "all": "All"
@@ -132,6 +133,7 @@
       "long-term": "Long-term"
     },
     "action": {
+      "pending": "…",
       "confirmed": "Accept",
       "rejected": "Reject",
       "cancelled": "Cancel",

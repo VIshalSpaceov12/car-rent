@@ -5,7 +5,7 @@ import { verifySession, requireRole, tenantScope } from '@/server/auth/dal';
 import { prisma } from '@/server/db';
 import { bookingToDTO } from '@/server/mappers';
 import { StatusChip } from '@/ui/StatusChip';
-import { BOOKING_STATUSES, bookingStatusFromDb, type BookingStatus } from '@car-rental/types';
+import { BOOKING_STATUSES, bookingStatusToDb, type BookingStatus } from '@car-rental/types';
 
 function wrongRoleTarget(role: string, locale: string): string {
   if (role === 'admin') return `/${locale}/admin`;
@@ -46,9 +46,7 @@ export default async function BookingsPage({
 
   const where: Record<string, unknown> = { ...tenantScope(user) };
   if (validStatus) {
-    where.status = bookingStatusFromDb(validStatus)
-      .toUpperCase()
-      .replace(/-/g, '_');
+    where.status = bookingStatusToDb(validStatus);
   }
 
   const bookings = await prisma.booking.findMany({
@@ -120,7 +118,7 @@ export default async function BookingsPage({
                   <td className="px-cr-md py-cr-sm text-cr-text font-medium">{b.customerName}</td>
                   <td className="px-cr-md py-cr-sm text-cr-text-muted">{b.vehicle.name}</td>
                   <td className="px-cr-md py-cr-sm text-cr-text-muted whitespace-nowrap">
-                    {b.startDate} → {b.endDate}
+                    {b.startDate} {t('dateSeparator')} {b.endDate}
                   </td>
                   <td className="px-cr-md py-cr-sm text-cr-text-muted">{t(`plan.${b.plan}`)}</td>
                   <td className="px-cr-md py-cr-sm text-cr-text font-medium">

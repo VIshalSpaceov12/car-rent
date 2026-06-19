@@ -91,7 +91,7 @@ export default async function BookingDetailPage({
         href={`/${locale}/dashboard/bookings`}
         className="text-cr-primary text-sm font-semibold hover:underline mb-cr-md inline-block"
       >
-        ← {t('backToList')}
+        {t('backToList')}
       </Link>
 
       <div className="flex items-center gap-cr-md mb-cr-lg flex-wrap">
@@ -116,7 +116,7 @@ export default async function BookingDetailPage({
         <p className="text-cr-text font-medium">{booking.vehicle.name}</p>
         <div className="flex gap-cr-lg mt-cr-sm flex-wrap text-sm text-cr-text-muted">
           <span>
-            {t('columns.dates')}: {booking.startDate} → {booking.endDate}
+            {t('columns.dates')}: {booking.startDate} {t('dateSeparator')} {booking.endDate}
           </span>
           <span>
             {t('columns.plan')}: {t(`plan.${booking.plan}`)}
