@@ -29,9 +29,10 @@ function statusStyle(status: BookingStatus, theme: ReturnType<typeof useTheme>):
 type BookingCardProps = {
   item: BookingDTO;
   theme: ReturnType<typeof useTheme>;
+  onPay?: (booking: BookingDTO) => void;
 };
 
-function BookingCard({ item, theme }: BookingCardProps) {
+function BookingCard({ item, theme, onPay }: BookingCardProps) {
   const { bg, fg } = statusStyle(item.status, theme);
   const currency = item.currency;
   const isRtl = i18n.locale === 'ar';
@@ -40,6 +41,8 @@ function BookingCard({ item, theme }: BookingCardProps) {
     style: 'currency',
     currency,
   }).format(item.totalAmount);
+
+  const canPay = item.status === 'reserved' && !item.payment;
 
   return (
     <View
@@ -104,11 +107,44 @@ function BookingCard({ item, theme }: BookingCardProps) {
       >
         {i18n.t('bookingList.total')}: {totalFormatted}
       </Text>
+
+      {/* Pay button — visible only for unpaid reserved bookings */}
+      {canPay && onPay && (
+        <Pressable
+          style={[
+            styles.payButton,
+            {
+              backgroundColor: theme.color.primary,
+              borderRadius: theme.radius.input,
+              marginTop: theme.spacing.sm,
+            },
+          ]}
+          onPress={() => onPay(item)}
+          accessibilityRole="button"
+          accessibilityLabel={i18n.t('bookingList.payNow')}
+        >
+          <Text
+            style={{
+              color: theme.color.onPrimary,
+              fontSize: theme.typography.caption.fontSize,
+              fontWeight: '700',
+              textAlign: 'center',
+            }}
+          >
+            {i18n.t('bookingList.payNow')}
+          </Text>
+        </Pressable>
+      )}
     </View>
   );
 }
 
-export function BookingsScreen() {
+type Props = {
+  /** If provided, "Pay" button appears on reserved bookings */
+  onPayBooking?: (booking: BookingDTO) => void;
+};
+
+export function BookingsScreen({ onPayBooking }: Props = {}) {
   const theme = useTheme();
   const [bookings, setBookings] = useState<BookingDTO[]>([]);
   const [loading, setLoading] = useState(true);
@@ -166,7 +202,9 @@ export function BookingsScreen() {
         <FlatList
           data={bookings}
           keyExtractor={(item) => item.id}
-          renderItem={({ item }) => <BookingCard item={item} theme={theme} />}
+          renderItem={({ item }) => (
+            <BookingCard item={item} theme={theme} onPay={onPayBooking} />
+          )}
           contentContainerStyle={{ padding: theme.spacing.md, paddingBottom: 120 }}
           showsVerticalScrollIndicator={false}
         />
@@ -181,4 +219,5 @@ const styles = StyleSheet.create({
   card: {},
   row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   statusPill: { paddingHorizontal: 10, paddingVertical: 4 },
+  payButton: { paddingVertical: 10, alignItems: 'center' },
 });

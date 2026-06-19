@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 vi.mock('@/auth/storage', () => ({ getToken: vi.fn().mockResolvedValue(null) }));
-import { login, me, listVehicles, getVehicle, quoteBooking, createBooking, listBookings } from './client';
+import { login, me, listVehicles, getVehicle, quoteBooking, createBooking, listBookings, payBooking } from './client';
 import { getToken } from '@/auth/storage';
 
 describe('mobile api client', () => {
@@ -178,5 +178,81 @@ describe('listBookings()', () => {
     vi.mocked(getToken).mockResolvedValueOnce('tok123');
     global.fetch = vi.fn().mockResolvedValue({ ok: false, status: 401, json: async () => ({}) }) as never;
     expect(await listBookings()).toEqual([]);
+  });
+});
+
+describe('payBooking()', () => {
+  beforeEach(() => vi.resetAllMocks());
+
+  const mockPayment: import('@car-rental/types').PaymentDTO = {
+    id: 'pay1',
+    bookingId: 'b1',
+    amount: 167.5,
+    currency: 'USD',
+    method: 'card',
+    status: 'paid',
+    createdAt: '2025-01-01T00:00:00.000Z',
+  };
+  const mockBooking: import('@car-rental/types').BookingDTO = {
+    id: 'b1',
+    status: 'confirmed',
+    vehicle: { id: 'v1', name: 'Toyota Camry' },
+    startDate: '2025-01-01',
+    endDate: '2025-01-04',
+    plan: 'daily',
+    baseAmount: 150,
+    taxAmount: 7.5,
+    serviceCharge: 10,
+    totalAmount: 167.5,
+    currency: 'USD',
+    createdAt: '2025-01-01T00:00:00.000Z',
+    payment: mockPayment,
+  };
+
+  it('POSTs method+cardOutcome and returns payment+booking on 200', async () => {
+    vi.mocked(getToken).mockResolvedValueOnce('tok123');
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({ payment: mockPayment, booking: mockBooking }),
+    }) as never;
+
+    const result = await payBooking('b1', { method: 'card', cardOutcome: 'success' });
+    expect(result).toEqual({ payment: mockPayment, booking: mockBooking });
+    expect(global.fetch).toHaveBeenCalledWith(
+      expect.stringContaining('/api/bookings/b1/pay'),
+      expect.objectContaining({
+        method: 'POST',
+        body: JSON.stringify({ method: 'card', cardOutcome: 'success' }),
+      }),
+    );
+  });
+
+  it('sends Authorization header with stored token', async () => {
+    vi.mocked(getToken).mockResolvedValueOnce('tok-pay');
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({ payment: mockPayment, booking: mockBooking }),
+    }) as never;
+    await payBooking('b1', { method: 'cash-on-delivery' });
+    expect(global.fetch).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.objectContaining({
+        headers: expect.objectContaining({ authorization: 'Bearer tok-pay' }),
+      }),
+    );
+  });
+
+  it('returns null on 409 (already paid)', async () => {
+    vi.mocked(getToken).mockResolvedValueOnce('tok123');
+    global.fetch = vi.fn().mockResolvedValue({ ok: false, status: 409, json: async () => ({}) }) as never;
+    expect(await payBooking('b1', { method: 'card', cardOutcome: 'success' })).toBeNull();
+  });
+
+  it('returns null on mock card failure (402 / non-ok)', async () => {
+    vi.mocked(getToken).mockResolvedValueOnce('tok123');
+    global.fetch = vi.fn().mockResolvedValue({ ok: false, status: 402, json: async () => ({}) }) as never;
+    expect(await payBooking('b1', { method: 'card', cardOutcome: 'fail' })).toBeNull();
   });
 });
