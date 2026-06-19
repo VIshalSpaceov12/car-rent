@@ -39,6 +39,10 @@ export async function POST(
     return NextResponse.json({ error: 'not_found' }, { status: 404 });
   }
 
+  if (!['COMPLETED', 'RETURNED'].includes(sourceBooking.status)) {
+    return NextResponse.json({ error: 'not_completed' }, { status: 422 });
+  }
+
   // Parse optional new dates from body
   const rawBody = await req.json().catch(() => ({}));
   const parsedDates = rebookSchema.safeParse(rawBody);

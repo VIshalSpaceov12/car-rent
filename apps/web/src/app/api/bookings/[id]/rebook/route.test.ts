@@ -28,6 +28,7 @@ function postReq(url: string, body?: unknown) {
 let customerToken: string;
 let providerToken: string;
 let sourceBookingId: string;
+let reservedBookingId: string;
 let createdBookingIds: string[] = [];
 
 beforeAll(async () => {
@@ -62,6 +63,25 @@ beforeAll(async () => {
     },
   });
   sourceBookingId = booking.id;
+
+  // Create a RESERVED booking to test status guard
+  const reservedBooking = await prisma.booking.create({
+    data: {
+      providerId: provider.providerId!,
+      customerId: customer.id,
+      vehicleId: vehicle.id,
+      startDate: new Date('2028-01-01'),
+      endDate: new Date('2028-01-04'),
+      plan: 'DAILY',
+      status: 'RESERVED',
+      baseAmount: 300,
+      taxAmount: 30,
+      serviceCharge: 15,
+      totalAmount: 345,
+      currency: 'USD',
+    },
+  });
+  reservedBookingId = reservedBooking.id;
 });
 
 afterAll(async () => {
@@ -69,6 +89,7 @@ afterAll(async () => {
     await prisma.booking.delete({ where: { id } }).catch(() => {});
   }
   await prisma.booking.delete({ where: { id: sourceBookingId } }).catch(() => {});
+  await prisma.booking.delete({ where: { id: reservedBookingId } }).catch(() => {});
   await prisma.$disconnect();
 });
 
@@ -117,6 +138,20 @@ describe('POST /api/bookings/[id]/rebook', () => {
 
     const sourceDb = await prisma.booking.findUnique({ where: { id: sourceBookingId } });
     expect(db!.vehicleId).toBe(sourceDb!.vehicleId);
+  });
+
+  it('returns 422 when source booking is not completed (RESERVED)', async () => {
+    mockAuth(customerToken);
+    const res = await POST(
+      postReq(`http://localhost/api/bookings/${reservedBookingId}/rebook`, {
+        startDate: '2029-01-01',
+        endDate: '2029-01-04',
+      }),
+      { params: Promise.resolve({ id: reservedBookingId }) }
+    );
+    expect(res.status).toBe(422);
+    const body = await res.json();
+    expect(body.error).toBe('not_completed');
   });
 
   it('returns 404 for non-owned booking', async () => {
