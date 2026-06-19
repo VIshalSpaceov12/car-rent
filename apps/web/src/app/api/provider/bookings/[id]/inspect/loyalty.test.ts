@@ -37,8 +37,13 @@ beforeAll(async () => {
   if (!customer) throw new Error('customer@demo.test not seeded');
   customerId = customer.id;
 
-  // Clean any existing loyalty entries for this customer to avoid test pollution
-  await prisma.loyaltyEntry.deleteMany({ where: { userId: customerId, reason: { contains: 'loyalty-test' } } });
+  // Clean any leftover loyalty entries from prior runs and reset the account to a known baseline
+  await prisma.loyaltyEntry.deleteMany({ where: { userId: customerId } });
+  await prisma.loyaltyAccount.upsert({
+    where: { userId: customerId },
+    create: { userId: customerId, points: 0 },
+    update: { points: 0 },
+  });
 
   const vehicle = await prisma.vehicle.findFirst({
     where: { providerId: provider.providerId!, status: 'ACTIVE' },
