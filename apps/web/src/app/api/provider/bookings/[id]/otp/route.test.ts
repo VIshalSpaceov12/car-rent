@@ -32,13 +32,11 @@ function postReq(url: string, body?: unknown, token?: string) {
 let providerToken: string;
 let customerToken: string;
 let bookingId: string;
-let providerUser: { id: string; providerId: string | null };
 
 beforeAll(async () => {
   const provider = await prisma.user.findUnique({ where: { email: 'provider@demo.test' } });
   if (!provider) throw new Error('provider@demo.test not seeded');
   providerToken = signJwt(provider.id);
-  providerUser = provider;
 
   const customer = await prisma.user.findUnique({ where: { email: 'customer@demo.test' } });
   if (!customer) throw new Error('customer@demo.test not seeded');

@@ -10,7 +10,7 @@ vi.mock('@/server/db', () => ({
 }));
 
 import { prisma } from '@/server/db';
-import { signContract, ContractError } from './contract';
+import { signContract } from './contract';
 
 const mockOtpFind = vi.mocked(prisma.otp.findUnique);
 const mockContractFind = vi.mocked(prisma.contract.findUnique);

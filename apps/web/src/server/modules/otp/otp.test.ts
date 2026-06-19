@@ -13,7 +13,7 @@ vi.mock('@/server/db', () => ({
 }));
 
 import { prisma } from '@/server/db';
-import { generateCode, issueOtp, verifyOtp, OtpError } from './otp';
+import { generateCode, issueOtp, verifyOtp } from './otp';
 
 const mockUpsert = vi.mocked(prisma.otp.upsert);
 const mockFindUnique = vi.mocked(prisma.otp.findUnique);

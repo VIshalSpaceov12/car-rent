@@ -10,7 +10,6 @@ type Props = {
 
 export function PickupSuccessScreen({ booking, onDone }: Props) {
   const theme = useTheme();
-  const isRtl = i18n.locale === 'ar';
 
   return (
     <View style={[styles.container, { backgroundColor: theme.color.background, padding: theme.spacing.md }]}>

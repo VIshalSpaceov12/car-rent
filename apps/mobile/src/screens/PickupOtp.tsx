@@ -1,6 +1,5 @@
 import { useCallback, useRef, useState } from 'react';
 import {
-  View,
   Text,
   TextInput,
   StyleSheet,
