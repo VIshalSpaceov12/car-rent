@@ -163,6 +163,33 @@ describe('POST /api/bookings/[id]/pay', () => {
     expect(body.booking.status).toBe('confirmed');
   });
 
+  it('card fail then card success retry → payment updated to paid + booking confirmed (not 500)', async () => {
+    mockAuth(customerToken);
+    const customer = await prisma.user.findUnique({ where: { email: 'customer@demo.test' } });
+    const bookingId = await createReservedBooking(customer!.id);
+
+    // First attempt: card fail — should return 201 with failed payment
+    const res1 = await POST(payReq(bookingId, { method: 'card', cardOutcome: 'fail' }), {
+      params: Promise.resolve({ id: bookingId }),
+    });
+    expect(res1.status).toBe(201);
+    const body1 = await res1.json();
+    expect(body1.payment.status).toBe('failed');
+    expect(body1.booking.status).toBe('reserved');
+
+    // Second attempt: card success — must NOT crash (was P2002 → 500), should succeed
+    mockAuth(customerToken);
+    const res2 = await POST(payReq(bookingId, { method: 'card', cardOutcome: 'success' }), {
+      params: Promise.resolve({ id: bookingId }),
+    });
+    expect(res2.status).toBe(201);
+    const body2 = await res2.json();
+    expect(body2.payment.status).toBe('paid');
+    expect(body2.booking.status).toBe('confirmed');
+    // Same payment row should be reused (upsert), not a new one
+    expect(body2.payment.id).toBe(body1.payment.id);
+  });
+
   it('double-pay on already-confirmed booking → 409', async () => {
     mockAuth(customerToken);
     const customer = await prisma.user.findUnique({ where: { email: 'customer@demo.test' } });

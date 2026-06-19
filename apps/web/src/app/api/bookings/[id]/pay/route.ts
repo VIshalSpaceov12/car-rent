@@ -75,51 +75,69 @@ export async function POST(
 
   const { paymentStatus, confirmsBooking } = resolveOutcome(method, cardOutcome);
 
-  // Use a transaction to atomically create payment + optionally confirm booking
-  const [payment, updatedBooking] = await prisma.$transaction(async (tx) => {
-    const pay = await tx.payment.create({
-      data: {
-        providerId: booking.providerId,
-        bookingId: booking.id,
-        amount: booking.totalAmount,
-        currency: booking.currency,
-        method: paymentMethodToDb(method) as 'CARD' | 'CASH_ON_DELIVERY',
-        status: paymentStatusToDb(paymentStatus) as 'PENDING' | 'PAID' | 'FAILED' | 'REFUNDED',
-      },
-    });
+  // Use a transaction to atomically upsert payment + optionally confirm booking.
+  // Payment.bookingId is @unique (1:1), so after a FAILED attempt a Payment row
+  // already exists. We upsert to avoid a P2002 unique-constraint crash on retry.
+  const txResult = await (async () => {
+    try {
+      return await prisma.$transaction(async (tx) => {
+        const payData = {
+          providerId: booking.providerId,
+          bookingId: booking.id,
+          amount: booking.totalAmount,
+          currency: booking.currency,
+          method: paymentMethodToDb(method) as 'CARD' | 'CASH_ON_DELIVERY',
+          status: paymentStatusToDb(paymentStatus) as 'PENDING' | 'PAID' | 'FAILED' | 'REFUNDED',
+        };
 
-    if (confirmsBooking) {
-      // Validate the transition (throws if not 'reserved')
-      try {
-        confirmAfterPayment(currentStatus);
-      } catch (err) {
-        if (err instanceof LifecycleError) {
-          throw err; // Will be caught outside transaction as 422
+        const pay = await tx.payment.upsert({
+          where: { bookingId: booking.id },
+          create: payData,
+          update: {
+            method: payData.method,
+            status: payData.status,
+          },
+        });
+
+        if (confirmsBooking) {
+          // Validate the transition (throws LifecycleError if not 'reserved')
+          confirmAfterPayment(currentStatus);
+
+          const b = await tx.booking.update({
+            where: { id: booking.id },
+            data: {
+              status: bookingStatusToDb('confirmed') as 'CONFIRMED',
+            },
+            include: BOOKING_INCLUDE,
+          });
+          return { pay, b };
         }
-        throw err;
-      }
 
-      const b = await tx.booking.update({
-        where: { id: booking.id },
-        data: {
-          status: bookingStatusToDb('confirmed') as 'CONFIRMED',
-        },
-        include: BOOKING_INCLUDE,
+        const b = await tx.booking.findUnique({
+          where: { id: booking.id },
+          include: BOOKING_INCLUDE,
+        });
+        return { pay, b: b! };
       });
-      return [pay, b] as const;
+    } catch (err) {
+      if (err instanceof LifecycleError) {
+        return { lifecycleError: err.message };
+      }
+      throw err;
     }
+  })();
 
-    const b = await tx.booking.findUnique({
-      where: { id: booking.id },
-      include: BOOKING_INCLUDE,
-    });
-    return [pay, b!] as const;
-  });
+  if ('lifecycleError' in txResult) {
+    return NextResponse.json(
+      { error: 'lifecycle_error', message: txResult.lifecycleError },
+      { status: 422 }
+    );
+  }
 
   return NextResponse.json(
     {
-      payment: paymentToDTO(payment),
-      booking: bookingToDTO(updatedBooking),
+      payment: paymentToDTO(txResult.pay),
+      booking: bookingToDTO(txResult.b),
     },
     { status: 201 }
   );
