@@ -1,0 +1,25 @@
+{
+  "name": "car-rental-platform",
+  "version": "0.0.0",
+  "private": true,
+  "description": "White-label car rental platform — npm-workspaces monorepo (web full-stack, mobile + shared packages)",
+  "workspaces": ["packages/*", "apps/*"],
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "dev:web": "npm run dev -w @car-rental/web",
+    "dev:mobile": "npm run start -w @car-rental/mobile",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "db:migrate": "npm run db:migrate -w @car-rental/web",
+    "db:seed": "npm run db:seed -w @car-rental/web"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.17.0",
+    "eslint": "^9.17.0",
+    "prettier": "^3.4.2",
+    "typescript": "^5.7.2",
+    "typescript-eslint": "^8.18.0"
+  }
+}
