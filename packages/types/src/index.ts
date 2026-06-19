@@ -200,6 +200,8 @@ export interface BookingDTO {
   totalAmount: number;
   currency: string;
   createdAt: string;
+  /** Present when the booking has an associated payment record */
+  payment?: PaymentDTO;
 }
 
 // ---- Payment mappers ----------------------------------------------------

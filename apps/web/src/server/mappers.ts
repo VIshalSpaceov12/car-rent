@@ -4,10 +4,13 @@ import {
   fuelTypeFromDb,
   vehicleStatusFromDb,
   bookingStatusFromDb,
+  paymentMethodFromDb,
+  paymentStatusFromDb,
   type VehicleDTO,
   type VehicleCategoryDTO,
   type BranchDTO,
   type BookingDTO,
+  type PaymentDTO,
 } from '@car-rental/types';
 
 type PrismaVehicle = {
@@ -100,6 +103,28 @@ export function branchToDTO(b: PrismaBranch): BranchDTO {
   return dto;
 }
 
+type PrismaPayment = {
+  id: string;
+  bookingId: string;
+  amount: { toString(): string } | number;
+  currency: string;
+  method: string;
+  status: string;
+  createdAt: Date;
+};
+
+export function paymentToDTO(p: PrismaPayment): PaymentDTO {
+  return {
+    id: p.id,
+    bookingId: p.bookingId,
+    amount: Number(p.amount),
+    currency: p.currency,
+    method: paymentMethodFromDb(p.method),
+    status: paymentStatusFromDb(p.status),
+    createdAt: p.createdAt.toISOString(),
+  };
+}
+
 type PrismaBooking = {
   id: string;
   status: string;
@@ -116,6 +141,7 @@ type PrismaBooking = {
   vehicle: { id: string; name: string };
   pickupBranch?: { name: string } | null;
   dropoffBranch?: { name: string } | null;
+  payment?: PrismaPayment | null;
 };
 
 export function bookingToDTO(b: PrismaBooking): BookingDTO {
@@ -135,5 +161,6 @@ export function bookingToDTO(b: PrismaBooking): BookingDTO {
   };
   if (b.pickupBranch) dto.pickupBranchName = b.pickupBranch.name;
   if (b.dropoffBranch) dto.dropoffBranchName = b.dropoffBranch.name;
+  if (b.payment) dto.payment = paymentToDTO(b.payment);
   return dto;
 }

@@ -7,6 +7,7 @@ const BOOKING_INCLUDE = {
   vehicle: { select: { id: true, name: true } },
   pickupBranch: { select: { name: true } },
   dropoffBranch: { select: { name: true } },
+  payment: true,
 } as const;
 
 export async function GET(
