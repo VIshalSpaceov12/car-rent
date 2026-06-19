@@ -78,10 +78,12 @@ export default async function BookingDetailPage({
   const nextStatuses = providerNextStatuses(currentStatus, user.role);
 
   // Build action items for the client component
-  // Exclude vehicle-prepared from the generic action buttons — the dedicated
-  // "Prepare vehicle" button (prepareVehicle action) handles that transition.
+  // Exclude vehicle-prepared: the dedicated "Prepare vehicle" button handles that.
+  // Exclude picked-up: that transition is OTP-gated and only reachable via the
+  // customer keyless flow (verify OTP → sign contract). A provider must never
+  // drive picked-up from the dashboard.
   const actionItems = nextStatuses
-    .filter((next) => next !== 'vehicle-prepared')
+    .filter((next) => next !== 'vehicle-prepared' && next !== 'picked-up')
     .map((next) => ({
       next,
       label: t(`action.${next}`),
