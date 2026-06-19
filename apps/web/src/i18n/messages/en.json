@@ -148,6 +148,38 @@
       "forbiddenRole": "You do not have permission to perform this action.",
       "notFound": "Booking not found."
     },
+    "otp": {
+      "sectionTitle": "OTP Lockbox",
+      "state": {
+        "none": "Not issued",
+        "issued": "Issued",
+        "consumed": "Consumed",
+        "expired": "Expired"
+      },
+      "attempts": "{count} attempt(s)",
+      "contractSigned": "Contract signed",
+      "contractPending": "Contract pending",
+      "issueButton": "Issue OTP",
+      "reissueButton": "Re-issue OTP",
+      "issuing": "Issuing…",
+      "codeHint": "Read this code to the customer — shown once only.",
+      "codeAriaLabel": "One-time code",
+      "codeOnceWarning": "This code will not be shown again."
+    },
+    "inspection": {
+      "sectionTitle": "Return inspection",
+      "conditionLabel": "Vehicle condition",
+      "notesLabel": "Notes",
+      "notesPlaceholder": "Describe any damage or remarks…",
+      "submit": "Complete booking",
+      "submitting": "Saving…",
+      "inspectedAt": "Inspected at",
+      "condition": {
+        "clean": "Clean",
+        "minor-damage": "Minor damage",
+        "major-damage": "Major damage"
+      }
+    },
     "detail": {
       "title": "Booking detail",
       "customer": "Customer",
