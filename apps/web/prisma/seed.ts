@@ -12,8 +12,12 @@ async function main() {
     create: {
       name: 'DriveHub', slug: 'drivehub',
       colors: { primary: '#F97316', primaryDark: '#EA580C' },
-      businessSettings: { create: { currency: 'USD', taxRatePct: 5 } },
     },
+  });
+  await prisma.businessSettings.upsert({
+    where: { providerId: provider.id },
+    update: {},
+    create: { providerId: provider.id, currency: 'USD', taxRatePct: 5 },
   });
   const users: Array<[string, 'ADMIN'|'PROVIDER'|'STAFF'|'CUSTOMER', string | null, string]> = [
     ['admin@demo.test', 'ADMIN', null, 'Platform Admin'],
