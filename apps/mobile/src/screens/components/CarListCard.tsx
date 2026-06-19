@@ -73,7 +73,8 @@ export function CarListCard({ vehicle, onPress }: Props) {
             marginTop: theme.spacing.xs,
           }}
         >
-          ${vehicle.pricePerDay}{' '}
+          {Intl.NumberFormat(i18n.locale, { style: 'currency', currency: 'USD' }).format(vehicle.pricePerDay)}
+          {' '}
           <Text style={{ color: theme.color.textMuted, fontSize: theme.typography.caption.fontSize, fontWeight: '400' }}>
             {i18n.t('browse.perDay')}
           </Text>

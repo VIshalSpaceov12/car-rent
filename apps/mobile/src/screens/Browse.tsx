@@ -31,11 +31,7 @@ export function BrowseScreen({ onSelectVehicle }: Props) {
   }, []);
 
   useEffect(() => {
-    fetchVehicles('');
-  }, [fetchVehicles]);
-
-  useEffect(() => {
-    const timer = setTimeout(() => fetchVehicles(query), 300);
+    const timer = setTimeout(() => fetchVehicles(query), query ? 300 : 0);
     return () => clearTimeout(timer);
   }, [query, fetchVehicles]);
 

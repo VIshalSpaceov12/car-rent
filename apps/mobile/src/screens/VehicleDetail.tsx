@@ -75,7 +75,8 @@ export function VehicleDetailScreen({ vehicleId }: Props) {
             marginTop: theme.spacing.xs,
           }}
         >
-          ${vehicle.pricePerDay}{' '}
+          {Intl.NumberFormat(i18n.locale, { style: 'currency', currency: 'USD' }).format(vehicle.pricePerDay)}
+          {' '}
           <Text style={{ color: theme.color.textMuted, fontSize: theme.typography.body.fontSize, fontWeight: '400' }}>
             {i18n.t('vehicle.perDay')}
           </Text>
