@@ -72,11 +72,11 @@ export default async function FleetPage({
                 >
                   <td className="px-cr-md py-cr-sm text-cr-text font-medium">{v.name}</td>
                   <td className="px-cr-md py-cr-sm text-cr-text-muted">{v.categoryName}</td>
-                  <td className="px-cr-md py-cr-sm text-cr-text-muted capitalize">{v.transmission}</td>
-                  <td className="px-cr-md py-cr-sm text-cr-text-muted capitalize">{v.fuelType}</td>
+                  <td className="px-cr-md py-cr-sm text-cr-text-muted">{t(`form.transmissions.${v.transmission}`)}</td>
+                  <td className="px-cr-md py-cr-sm text-cr-text-muted">{t(`form.fuelTypes.${v.fuelType}`)}</td>
                   <td className="px-cr-md py-cr-sm text-cr-text">{v.pricePerDay}</td>
                   <td className="px-cr-md py-cr-sm">
-                    <StatusChip status={v.status} label={v.status} />
+                    <StatusChip status={v.status} label={t(`form.statuses.${v.status}`)} />
                   </td>
                   <td className="px-cr-md py-cr-sm">
                     <div className="flex gap-cr-md items-center">

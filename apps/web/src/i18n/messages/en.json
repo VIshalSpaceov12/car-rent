@@ -59,7 +59,22 @@
       "selectTransmission": "Select transmission",
       "selectFuelType": "Select fuel type",
       "selectStatus": "Select status",
-      "errorSave": "Failed to save. Check your inputs."
+      "errorSave": "Failed to save. Check your inputs.",
+      "transmissions": {
+        "automatic": "Automatic",
+        "manual": "Manual"
+      },
+      "fuelTypes": {
+        "petrol": "Petrol",
+        "diesel": "Diesel",
+        "electric": "Electric",
+        "hybrid": "Hybrid"
+      },
+      "statuses": {
+        "active": "Active",
+        "maintenance": "Maintenance",
+        "retired": "Retired"
+      }
     }
   },
   "categories": {

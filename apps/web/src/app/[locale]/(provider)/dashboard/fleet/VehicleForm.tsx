@@ -105,7 +105,7 @@ export function VehicleForm({ locale, categories, branches, vehicle, action }: P
           >
             <option value="">{t('selectTransmission')}</option>
             {TRANSMISSIONS.map((tx) => (
-              <option key={tx} value={tx}>{tx}</option>
+              <option key={tx} value={tx}>{t(`transmissions.${tx}`)}</option>
             ))}
           </select>
         </div>
@@ -119,7 +119,7 @@ export function VehicleForm({ locale, categories, branches, vehicle, action }: P
           >
             <option value="">{t('selectFuelType')}</option>
             {FUEL_TYPES.map((ft) => (
-              <option key={ft} value={ft}>{ft}</option>
+              <option key={ft} value={ft}>{t(`fuelTypes.${ft}`)}</option>
             ))}
           </select>
         </div>
@@ -133,7 +133,7 @@ export function VehicleForm({ locale, categories, branches, vehicle, action }: P
           className="rounded-cr-input border border-cr-border bg-cr-surface px-cr-md py-cr-sm text-cr-text"
         >
           {VEHICLE_STATUSES.map((s) => (
-            <option key={s} value={s}>{s}</option>
+            <option key={s} value={s}>{t(`statuses.${s}`)}</option>
           ))}
         </select>
       </div>

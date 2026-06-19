@@ -59,7 +59,22 @@
       "selectTransmission": "اختر ناقل الحركة",
       "selectFuelType": "اختر نوع الوقود",
       "selectStatus": "اختر الحالة",
-      "errorSave": "فشل الحفظ. تحقق من المدخلات."
+      "errorSave": "فشل الحفظ. تحقق من المدخلات.",
+      "transmissions": {
+        "automatic": "أوتوماتيك",
+        "manual": "يدوي"
+      },
+      "fuelTypes": {
+        "petrol": "بنزين",
+        "diesel": "ديزل",
+        "electric": "كهربائي",
+        "hybrid": "هجين"
+      },
+      "statuses": {
+        "active": "نشط",
+        "maintenance": "صيانة",
+        "retired": "متقاعد"
+      }
     }
   },
   "categories": {
