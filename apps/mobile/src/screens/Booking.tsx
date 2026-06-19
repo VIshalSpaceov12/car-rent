@@ -96,14 +96,14 @@ export function BookingScreen({ vehicleId, vehicleName, pricePerDay, onBookingCr
     setQuote(null);
     const result = await quoteBooking({ vehicleId, startDate, endDate, plan }, code);
     setQuoteLoading(false);
-    if (result) {
+    if (result && result.discountApplied !== false) {
       setAppliedCode(code);
       setQuote(result);
       setPromoError(false);
     } else {
       setPromoError(true);
       setAppliedCode(undefined);
-      // re-fetch without code
+      // re-fetch without code (result may be a valid 200 but code was rejected)
       void fetchQuote(undefined);
     }
   }, [promoCode, vehicleId, startDate, endDate, plan, fetchQuote]);

@@ -241,7 +241,7 @@ export function SupportScreen() {
         transparent
         onRequestClose={() => setModalVisible(false)}
       >
-        <View style={styles.modalOverlay}>
+        <View style={[styles.modalOverlay, { backgroundColor: theme.color.overlay }]}>
           <View
             style={[
               styles.modalContent,
@@ -348,7 +348,6 @@ const styles = StyleSheet.create({
   responseBox: {},
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
     justifyContent: 'flex-end',
   },
   modalContent: { maxHeight: '90%' },

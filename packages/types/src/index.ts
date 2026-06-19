@@ -183,6 +183,8 @@ export interface BookingQuote {
   serviceCharge: number;
   total: number;
   currency: string;
+  /** Present when a discountCode was supplied. false means the code was invalid/expired/wrong-tenant. */
+  discountApplied?: boolean;
 }
 
 export interface BookingDTO {

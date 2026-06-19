@@ -46,7 +46,6 @@ export function ReceiptScreen({ booking, onRebooked, onBack }: Props) {
 
   const isPast =
     booking.status === 'completed' ||
-    booking.status === 'cancelled' ||
     booking.status === 'returned';
 
   const row = (label: string, value: string) => (

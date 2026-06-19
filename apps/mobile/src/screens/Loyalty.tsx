@@ -127,7 +127,7 @@ export function LoyaltyScreen() {
             <Text
               style={{
                 color: theme.color.onPrimary,
-                fontSize: 40,
+                fontSize: theme.typography.display.fontSize,
                 fontWeight: '800',
                 textAlign: 'center',
                 marginTop: 4,

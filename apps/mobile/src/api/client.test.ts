@@ -5,6 +5,8 @@ import {
   login, me, listVehicles, getVehicle, quoteBooking, createBooking, listBookings,
   payBooking, verifyOtp, signContract, returnVehicle,
   rebookBooking, getLoyalty,
+  listAddresses, createAddress, updateAddress, deleteAddress,
+  createSupportTicket, listSupportTickets,
 } from './client';
 import { getToken } from '@/auth/storage';
 
@@ -641,5 +643,213 @@ describe('quoteBooking() with discountCode', () => {
       (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0]?.[1]?.body as string,
     ) as Record<string, unknown>;
     expect(body.discountCode).toBeUndefined();
+  });
+});
+
+// ---- Saved Addresses -------------------------------------------------------
+
+const mockAddress: import('@car-rental/types').AddressDTO = {
+  id: 'addr1',
+  userId: 'u1',
+  label: 'Home',
+  line1: '123 Main St',
+  city: 'Dubai',
+  country: 'AE',
+  isDefault: true,
+  createdAt: '2025-01-01T00:00:00.000Z',
+};
+
+describe('listAddresses()', () => {
+  beforeEach(() => vi.resetAllMocks());
+
+  it('GETs /api/addresses and returns array on 200', async () => {
+    vi.mocked(getToken).mockResolvedValueOnce('tok123');
+    global.fetch = vi.fn().mockResolvedValue({ ok: true, status: 200, json: async () => [mockAddress] }) as never;
+    const result = await listAddresses();
+    expect(result).toEqual([mockAddress]);
+    expect(global.fetch).toHaveBeenCalledWith(expect.stringContaining('/api/addresses'), expect.any(Object));
+  });
+
+  it('returns empty array on non-ok response', async () => {
+    vi.mocked(getToken).mockResolvedValueOnce('tok123');
+    global.fetch = vi.fn().mockResolvedValue({ ok: false, status: 401, json: async () => ({}) }) as never;
+    expect(await listAddresses()).toEqual([]);
+  });
+
+  it('sends Authorization header', async () => {
+    vi.mocked(getToken).mockResolvedValueOnce('tok-addr');
+    global.fetch = vi.fn().mockResolvedValue({ ok: true, status: 200, json: async () => [] }) as never;
+    await listAddresses();
+    expect(global.fetch).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.objectContaining({ headers: expect.objectContaining({ authorization: 'Bearer tok-addr' }) }),
+    );
+  });
+});
+
+describe('createAddress()', () => {
+  beforeEach(() => vi.resetAllMocks());
+
+  it('POSTs to /api/addresses and returns AddressDTO on 200', async () => {
+    vi.mocked(getToken).mockResolvedValueOnce('tok123');
+    global.fetch = vi.fn().mockResolvedValue({ ok: true, status: 200, json: async () => mockAddress }) as never;
+    const input = { label: 'Home', line1: '123 Main St', city: 'Dubai', country: 'AE', isDefault: true };
+    const result = await createAddress(input);
+    expect(result).toEqual(mockAddress);
+    expect(global.fetch).toHaveBeenCalledWith(
+      expect.stringContaining('/api/addresses'),
+      expect.objectContaining({ method: 'POST', body: JSON.stringify(input) }),
+    );
+  });
+
+  it('returns null on non-ok response', async () => {
+    vi.mocked(getToken).mockResolvedValueOnce('tok123');
+    global.fetch = vi.fn().mockResolvedValue({ ok: false, status: 422, json: async () => ({}) }) as never;
+    expect(await createAddress({ label: 'Work', line1: '1 Ave', city: 'Dubai', country: 'AE' })).toBeNull();
+  });
+
+  it('sends Authorization header', async () => {
+    vi.mocked(getToken).mockResolvedValueOnce('tok-create-addr');
+    global.fetch = vi.fn().mockResolvedValue({ ok: true, status: 200, json: async () => mockAddress }) as never;
+    await createAddress({ label: 'Home', line1: '1 St', city: 'Dubai', country: 'AE' });
+    expect(global.fetch).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.objectContaining({ headers: expect.objectContaining({ authorization: 'Bearer tok-create-addr' }) }),
+    );
+  });
+});
+
+describe('updateAddress()', () => {
+  beforeEach(() => vi.resetAllMocks());
+
+  it('PATCHes /api/addresses/:id and returns updated AddressDTO on 200', async () => {
+    vi.mocked(getToken).mockResolvedValueOnce('tok123');
+    const updated = { ...mockAddress, label: 'Office' };
+    global.fetch = vi.fn().mockResolvedValue({ ok: true, status: 200, json: async () => updated }) as never;
+    const result = await updateAddress('addr1', { label: 'Office' });
+    expect(result).toEqual(updated);
+    expect(global.fetch).toHaveBeenCalledWith(
+      expect.stringContaining('/api/addresses/addr1'),
+      expect.objectContaining({ method: 'PATCH', body: JSON.stringify({ label: 'Office' }) }),
+    );
+  });
+
+  it('returns null on non-ok response', async () => {
+    vi.mocked(getToken).mockResolvedValueOnce('tok123');
+    global.fetch = vi.fn().mockResolvedValue({ ok: false, status: 404, json: async () => ({}) }) as never;
+    expect(await updateAddress('addr1', { label: 'X' })).toBeNull();
+  });
+
+  it('sends Authorization header', async () => {
+    vi.mocked(getToken).mockResolvedValueOnce('tok-upd-addr');
+    global.fetch = vi.fn().mockResolvedValue({ ok: true, status: 200, json: async () => mockAddress }) as never;
+    await updateAddress('addr1', { city: 'Abu Dhabi' });
+    expect(global.fetch).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.objectContaining({ headers: expect.objectContaining({ authorization: 'Bearer tok-upd-addr' }) }),
+    );
+  });
+});
+
+describe('deleteAddress()', () => {
+  beforeEach(() => vi.resetAllMocks());
+
+  it('DELETEs /api/addresses/:id and returns true on 200', async () => {
+    vi.mocked(getToken).mockResolvedValueOnce('tok123');
+    global.fetch = vi.fn().mockResolvedValue({ ok: true, status: 200, json: async () => ({}) }) as never;
+    expect(await deleteAddress('addr1')).toBe(true);
+    expect(global.fetch).toHaveBeenCalledWith(
+      expect.stringContaining('/api/addresses/addr1'),
+      expect.objectContaining({ method: 'DELETE' }),
+    );
+  });
+
+  it('returns false on non-ok response', async () => {
+    vi.mocked(getToken).mockResolvedValueOnce('tok123');
+    global.fetch = vi.fn().mockResolvedValue({ ok: false, status: 404, json: async () => ({}) }) as never;
+    expect(await deleteAddress('addr1')).toBe(false);
+  });
+
+  it('sends Authorization header', async () => {
+    vi.mocked(getToken).mockResolvedValueOnce('tok-del-addr');
+    global.fetch = vi.fn().mockResolvedValue({ ok: true, status: 200, json: async () => ({}) }) as never;
+    await deleteAddress('addr1');
+    expect(global.fetch).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.objectContaining({ headers: expect.objectContaining({ authorization: 'Bearer tok-del-addr' }) }),
+    );
+  });
+});
+
+// ---- Support Tickets -------------------------------------------------------
+
+const mockTicket: import('@car-rental/types').SupportTicketDTO = {
+  id: 'tkt1',
+  providerId: 'p1',
+  userId: 'u1',
+  subject: 'Billing issue',
+  body: 'I was charged twice.',
+  status: 'open',
+  createdAt: '2025-01-01T00:00:00.000Z',
+  updatedAt: '2025-01-01T00:00:00.000Z',
+};
+
+describe('createSupportTicket()', () => {
+  beforeEach(() => vi.resetAllMocks());
+
+  it('POSTs to /api/support and returns SupportTicketDTO on 200', async () => {
+    vi.mocked(getToken).mockResolvedValueOnce('tok123');
+    global.fetch = vi.fn().mockResolvedValue({ ok: true, status: 200, json: async () => mockTicket }) as never;
+    const input = { subject: 'Billing issue', body: 'I was charged twice.' };
+    const result = await createSupportTicket(input);
+    expect(result).toEqual(mockTicket);
+    expect(global.fetch).toHaveBeenCalledWith(
+      expect.stringContaining('/api/support'),
+      expect.objectContaining({ method: 'POST', body: JSON.stringify(input) }),
+    );
+  });
+
+  it('returns null on non-ok response', async () => {
+    vi.mocked(getToken).mockResolvedValueOnce('tok123');
+    global.fetch = vi.fn().mockResolvedValue({ ok: false, status: 422, json: async () => ({}) }) as never;
+    expect(await createSupportTicket({ subject: 'X', body: 'Y' })).toBeNull();
+  });
+
+  it('sends Authorization header', async () => {
+    vi.mocked(getToken).mockResolvedValueOnce('tok-tkt');
+    global.fetch = vi.fn().mockResolvedValue({ ok: true, status: 200, json: async () => mockTicket }) as never;
+    await createSupportTicket({ subject: 'X', body: 'Y' });
+    expect(global.fetch).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.objectContaining({ headers: expect.objectContaining({ authorization: 'Bearer tok-tkt' }) }),
+    );
+  });
+});
+
+describe('listSupportTickets()', () => {
+  beforeEach(() => vi.resetAllMocks());
+
+  it('GETs /api/support and returns array on 200', async () => {
+    vi.mocked(getToken).mockResolvedValueOnce('tok123');
+    global.fetch = vi.fn().mockResolvedValue({ ok: true, status: 200, json: async () => [mockTicket] }) as never;
+    const result = await listSupportTickets();
+    expect(result).toEqual([mockTicket]);
+    expect(global.fetch).toHaveBeenCalledWith(expect.stringContaining('/api/support'), expect.any(Object));
+  });
+
+  it('returns empty array on non-ok response', async () => {
+    vi.mocked(getToken).mockResolvedValueOnce('tok123');
+    global.fetch = vi.fn().mockResolvedValue({ ok: false, status: 401, json: async () => ({}) }) as never;
+    expect(await listSupportTickets()).toEqual([]);
+  });
+
+  it('sends Authorization header', async () => {
+    vi.mocked(getToken).mockResolvedValueOnce('tok-lst-tkt');
+    global.fetch = vi.fn().mockResolvedValue({ ok: true, status: 200, json: async () => [] }) as never;
+    await listSupportTickets();
+    expect(global.fetch).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.objectContaining({ headers: expect.objectContaining({ authorization: 'Bearer tok-lst-tkt' }) }),
+    );
   });
 });
