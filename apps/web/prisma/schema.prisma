@@ -67,6 +67,12 @@ enum PaymentStatus {
   REFUNDED
 }
 
+enum ReturnCondition {
+  CLEAN
+  MINOR_DAMAGE
+  MAJOR_DAMAGE
+}
+
 model Provider {
   id            String   @id @default(cuid())
   name          String
@@ -85,6 +91,9 @@ model Provider {
   vehicles           Vehicle[]
   bookings           Booking[]
   payments           Payment[]
+  otps               Otp[]
+  contracts          Contract[]
+  returnInspections  ReturnInspection[]
 }
 
 model VehicleCategory {
@@ -144,6 +153,7 @@ model Vehicle {
   category VehicleCategory @relation(fields: [categoryId], references: [id])
   branch   Branch?         @relation(fields: [branchId], references: [id])
   bookings Booking[]
+  otps     Otp[]
 
   @@index([providerId])
   @@index([categoryId])
@@ -210,12 +220,15 @@ model Booking {
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
 
-  provider      Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
-  customer      User     @relation(fields: [customerId], references: [id])
-  vehicle       Vehicle  @relation(fields: [vehicleId], references: [id])
-  pickupBranch  Branch?  @relation("pickup",  fields: [pickupBranchId],  references: [id])
-  dropoffBranch Branch?  @relation("dropoff", fields: [dropoffBranchId], references: [id])
+  provider      Provider         @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  customer      User             @relation(fields: [customerId], references: [id])
+  vehicle       Vehicle          @relation(fields: [vehicleId], references: [id])
+  pickupBranch  Branch?          @relation("pickup",  fields: [pickupBranchId],  references: [id])
+  dropoffBranch Branch?          @relation("dropoff", fields: [dropoffBranchId], references: [id])
   payment       Payment?
+  otp           Otp?
+  contract      Contract?
+  inspection    ReturnInspection?
 
   @@index([providerId])
   @@index([customerId])
@@ -232,6 +245,54 @@ model Payment {
   status     PaymentStatus @default(PENDING)
   createdAt  DateTime      @default(now())
   updatedAt  DateTime      @updatedAt
+
+  booking  Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  provider Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+
+  @@index([providerId])
+}
+
+model Otp {
+  id          String    @id @default(cuid())
+  providerId  String
+  bookingId   String    @unique
+  vehicleId   String
+  codeHash    String
+  expiresAt   DateTime
+  consumedAt  DateTime?
+  attempts    Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  booking  Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  provider Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  vehicle  Vehicle  @relation(fields: [vehicleId], references: [id])
+
+  @@index([providerId])
+}
+
+model Contract {
+  id            String    @id @default(cuid())
+  providerId    String
+  bookingId     String    @unique
+  signatureName String?
+  signedAt      DateTime?
+  termsVersion  String
+  createdAt     DateTime  @default(now())
+
+  booking  Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  provider Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+
+  @@index([providerId])
+}
+
+model ReturnInspection {
+  id          String          @id @default(cuid())
+  providerId  String
+  bookingId   String          @unique
+  condition   ReturnCondition
+  notes       String?
+  inspectedAt DateTime        @default(now())
 
   booking  Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
   provider Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
