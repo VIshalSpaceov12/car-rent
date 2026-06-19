@@ -11,6 +11,7 @@ import {
 import { useTheme } from '@car-rental/tokens';
 import type { BookingDTO, BookingStatus } from '@car-rental/types';
 import { listBookings, returnVehicle } from '@/api/client';
+import { useBookingStream } from '@/api/useBookingStream';
 import { i18n } from '@/i18n';
 
 // Status pill colours — mapped via theme tokens, no raw hex
@@ -218,6 +219,15 @@ export function BookingsScreen({ onPayBooking, onPickup }: Props = {}) {
     setBookings(result);
     setLoading(false);
   }, []);
+
+  // Live status updates: patch the in-memory list when an SSE event arrives
+  const handleStatusChange = useCallback((bookingId: string, status: BookingStatus) => {
+    setBookings((prev) =>
+      prev.map((b) => (b.id === bookingId ? { ...b, status } : b)),
+    );
+  }, []);
+
+  useBookingStream({ onStatusChange: handleStatusChange });
 
   const handleReturn = useCallback(async (booking: BookingDTO) => {
     Alert.alert(
