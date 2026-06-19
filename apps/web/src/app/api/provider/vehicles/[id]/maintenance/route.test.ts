@@ -30,7 +30,7 @@ let customerToken: string;
 let otherProviderToken: string;
 let vehicleId: string;
 let providerId: string;
-let createdRecordIds: string[] = [];
+const createdRecordIds: string[] = [];
 
 beforeAll(async () => {
   const provider = await prisma.user.findUnique({ where: { email: 'provider@demo.test' } });

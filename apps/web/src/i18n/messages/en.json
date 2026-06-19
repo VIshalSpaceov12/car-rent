@@ -14,7 +14,12 @@
       "categories": "Categories",
       "branches": "Branches",
       "bookings": "Bookings",
-      "payments": "Payments"
+      "payments": "Payments",
+      "analytics": "Analytics",
+      "discounts": "Discounts",
+      "staff": "Staff",
+      "customers": "Customers",
+      "support": "Support"
     }
   },
   "admin": {
@@ -35,6 +40,7 @@
       "actions": "Actions"
     },
     "edit": "Edit",
+    "maintenance": "Maintenance",
     "delete": "Delete",
     "deleteConfirm": "Delete this vehicle?",
     "form": {
@@ -239,6 +245,137 @@
       "notFound": "Payment not found.",
       "forbidden": "You do not have permission.",
       "notRefundable": "Only paid payments can be refunded."
+    }
+  },
+  "analytics": {
+    "title": "Analytics",
+    "revenueTotal": "Revenue (all time)",
+    "revenueMTD": "Revenue (this month)",
+    "bookingsCount": "Total bookings",
+    "activeRentals": "Active rentals",
+    "fleetUtilization": "Fleet utilization",
+    "popularVehicles": "Popular vehicles",
+    "bookings": "bookings",
+    "noPopularVehicles": "No booking data yet."
+  },
+  "discounts": {
+    "title": "Discount codes",
+    "addCode": "Add code",
+    "noDiscounts": "No discount codes yet.",
+    "columns": {
+      "code": "Code",
+      "kind": "Kind",
+      "value": "Value",
+      "status": "Status",
+      "expires": "Expires",
+      "actions": "Actions"
+    },
+    "kind": {
+      "percent": "Percent",
+      "fixed": "Fixed"
+    },
+    "active": "Active",
+    "inactive": "Inactive",
+    "never": "Never",
+    "activate": "Activate",
+    "deactivate": "Deactivate",
+    "form": {
+      "title": "New discount code",
+      "code": "Code",
+      "codePlaceholder": "SUMMER20",
+      "codeHint": "Uppercase letters, digits, hyphens, underscores",
+      "kind": "Type",
+      "kindPercent": "Percent (%)",
+      "kindFixed": "Fixed amount",
+      "value": "Value",
+      "expiresAt": "Expires at (optional)",
+      "add": "Add code",
+      "adding": "Adding…",
+      "cancel": "Cancel",
+      "errorSave": "Failed to save. Check your inputs."
+    }
+  },
+  "staff": {
+    "title": "Staff",
+    "addStaff": "Add staff",
+    "noStaff": "No staff yet.",
+    "columns": {
+      "name": "Name",
+      "email": "Email",
+      "joined": "Joined",
+      "actions": "Actions"
+    },
+    "deactivate": "Deactivate",
+    "deactivateConfirm": "Deactivate this staff member?",
+    "deactivating": "Deactivating…",
+    "form": {
+      "title": "Add staff member",
+      "name": "Name",
+      "email": "Email",
+      "add": "Create account",
+      "adding": "Creating…",
+      "cancel": "Cancel",
+      "errorSave": "Failed to create. Check your inputs.",
+      "tempPassword": "Temporary password",
+      "tempPasswordHint": "Share this password securely — it will not be shown again.",
+      "done": "Done"
+    }
+  },
+  "customers": {
+    "title": "Customers",
+    "noCustomers": "No customers yet.",
+    "columns": {
+      "name": "Name",
+      "email": "Email",
+      "bookings": "Bookings",
+      "joined": "Joined"
+    }
+  },
+  "support": {
+    "title": "Support tickets",
+    "noTickets": "No support tickets yet.",
+    "backToList": "← Back to tickets",
+    "columns": {
+      "subject": "Subject",
+      "customer": "Customer",
+      "status": "Status",
+      "date": "Date",
+      "actions": "Actions"
+    },
+    "status": {
+      "open": "Open",
+      "resolved": "Resolved"
+    },
+    "view": "View",
+    "ticketDetail": "Ticket detail",
+    "subject": "Subject",
+    "message": "Message",
+    "response": "Response",
+    "responsePlaceholder": "Type your response…",
+    "resolve": "Resolve",
+    "resolving": "Resolving…",
+    "alreadyResolved": "This ticket has been resolved.",
+    "errorSave": "Failed to save response."
+  },
+  "maintenance": {
+    "title": "Maintenance records",
+    "noRecords": "No maintenance records yet.",
+    "addRecord": "Add record",
+    "columns": {
+      "date": "Date",
+      "description": "Description",
+      "cost": "Cost"
+    },
+    "form": {
+      "title": "Add maintenance record",
+      "date": "Date",
+      "description": "Description",
+      "descriptionPlaceholder": "Oil change, tyre rotation…",
+      "cost": "Cost (optional)",
+      "add": "Add record",
+      "adding": "Adding…",
+      "cancel": "Cancel",
+      "errorSave": "Failed to save. Check your inputs."
     }
   },
   "branches": {

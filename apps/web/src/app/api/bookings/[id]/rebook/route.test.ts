@@ -29,7 +29,7 @@ let customerToken: string;
 let providerToken: string;
 let sourceBookingId: string;
 let reservedBookingId: string;
-let createdBookingIds: string[] = [];
+const createdBookingIds: string[] = [];
 
 beforeAll(async () => {
   const customer = await prisma.user.findUnique({ where: { email: 'customer@demo.test' } });

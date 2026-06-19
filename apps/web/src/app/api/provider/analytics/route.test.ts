@@ -21,14 +21,12 @@ function mockNoAuth() {
 let providerToken: string;
 let customerToken: string;
 let otherProviderToken: string;
-let providerId: string;
 let testPaymentId: string | undefined;
 
 beforeAll(async () => {
   const provider = await prisma.user.findUnique({ where: { email: 'provider@demo.test' } });
   if (!provider) throw new Error('provider@demo.test not seeded');
   providerToken = signJwt(provider.id);
-  providerId = provider.providerId!;
 
   const customer = await prisma.user.findUnique({ where: { email: 'customer@demo.test' } });
   if (!customer) throw new Error('customer@demo.test not seeded');
