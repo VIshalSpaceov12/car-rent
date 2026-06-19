@@ -7,6 +7,10 @@ import {
   vehicleStatusToDb, vehicleStatusFromDb,
   vehicleCreateSchema, categoryCreateSchema,
   BOOKING_TRANSITIONS, bookingQuoteRequestSchema,
+  payInitiateSchema,
+  PAYMENT_METHODS, PAYMENT_STATUSES,
+  paymentMethodToDb, paymentMethodFromDb,
+  paymentStatusToDb, paymentStatusFromDb,
 } from './index';
 
 describe('@car-rental/types', () => {
@@ -142,6 +146,57 @@ describe('@car-rental/types', () => {
       endDate: '2026-07-07',
       plan: 'hourly',
     });
+    expect(result.success).toBe(false);
+  });
+
+  // ---- Payment enums + schema ----------------------------------------------
+  it('exposes PAYMENT_METHODS', () => {
+    expect(PAYMENT_METHODS).toEqual(['card', 'cash-on-delivery']);
+  });
+
+  it('exposes PAYMENT_STATUSES', () => {
+    expect(PAYMENT_STATUSES).toEqual(['pending', 'paid', 'failed', 'refunded']);
+  });
+
+  it('maps PaymentMethod wire ⇄ db', () => {
+    expect(paymentMethodToDb('card')).toBe('CARD');
+    expect(paymentMethodToDb('cash-on-delivery')).toBe('CASH_ON_DELIVERY');
+    expect(paymentMethodFromDb('CASH_ON_DELIVERY')).toBe('cash-on-delivery');
+  });
+
+  it('maps PaymentStatus wire ⇄ db', () => {
+    expect(paymentStatusToDb('paid')).toBe('PAID');
+    expect(paymentStatusFromDb('REFUNDED')).toBe('refunded');
+  });
+
+  it('payInitiateSchema: parses card with default outcome', () => {
+    const result = payInitiateSchema.safeParse({ method: 'card' });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.method).toBe('card');
+      expect(result.data.cardOutcome).toBe('success');
+    }
+  });
+
+  it('payInitiateSchema: parses card with explicit fail outcome', () => {
+    const result = payInitiateSchema.safeParse({ method: 'card', cardOutcome: 'fail' });
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data.cardOutcome).toBe('fail');
+  });
+
+  it('payInitiateSchema: parses cash-on-delivery without cardOutcome', () => {
+    const result = payInitiateSchema.safeParse({ method: 'cash-on-delivery' });
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data.method).toBe('cash-on-delivery');
+  });
+
+  it('payInitiateSchema: rejects unknown method', () => {
+    const result = payInitiateSchema.safeParse({ method: 'bitcoin' });
+    expect(result.success).toBe(false);
+  });
+
+  it('payInitiateSchema: rejects invalid cardOutcome', () => {
+    const result = payInitiateSchema.safeParse({ method: 'card', cardOutcome: 'maybe' });
     expect(result.success).toBe(false);
   });
 });

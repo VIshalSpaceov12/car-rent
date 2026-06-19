@@ -202,6 +202,36 @@ export interface BookingDTO {
   createdAt: string;
 }
 
+// ---- Payment mappers ----------------------------------------------------
+export const paymentMethodToDb = (m: PaymentMethod): string => toDb(m);
+export const paymentMethodFromDb = (m: string): PaymentMethod => fromDb(m) as PaymentMethod;
+export const paymentStatusToDb = (s: PaymentStatus): string => toDb(s);
+export const paymentStatusFromDb = (s: string): PaymentStatus => fromDb(s) as PaymentStatus;
+
+// ---- Payment DTO + schema ------------------------------------------------
+export interface PaymentDTO {
+  id: string;
+  bookingId: string;
+  amount: number;
+  currency: string;
+  method: PaymentMethod;
+  status: PaymentStatus;
+  createdAt: string;
+}
+
+/**
+ * Schema for initiating a payment. `cardOutcome` is a MOCK-ONLY toggle that
+ * drives the fake card result — it is never persisted and must NOT be sent in
+ * production. Omit it (or pass 'success') for a happy-path card, 'fail' to
+ * simulate a declined card.
+ */
+export const payInitiateSchema = z.object({
+  method: z.enum(PAYMENT_METHODS),
+  /** MOCK ONLY — controls fake card result; ignored for cash-on-delivery */
+  cardOutcome: z.enum(['success', 'fail']).optional().default('success'),
+});
+export type PayInitiateInput = z.infer<typeof payInitiateSchema>;
+
 // ---- Booking lifecycle transition map ------------------------------------
 // Maps current status -> list of { next, allowedRoles }
 // provider/staff drive operational transitions; customer can only cancel from early states
