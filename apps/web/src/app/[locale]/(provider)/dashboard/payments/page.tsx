@@ -140,6 +140,7 @@ export default async function PaymentsPage({
                           label={t('refund')}
                           confirmLabel={t('refundConfirm')}
                           pendingLabel={t('refunding')}
+                          cancelLabel={t('cancel')}
                           errorLabels={errorLabels}
                           action={refundPayment.bind(null, locale, dto.id)}
                         />

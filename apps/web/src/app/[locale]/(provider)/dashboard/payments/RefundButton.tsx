@@ -6,6 +6,7 @@ interface RefundButtonProps {
   label: string;
   confirmLabel: string;
   pendingLabel: string;
+  cancelLabel: string;
   errorLabels: Record<string, string>;
   action: () => Promise<{ error: string } | null>;
 }
@@ -14,6 +15,7 @@ export function RefundButton({
   label,
   confirmLabel,
   pendingLabel,
+  cancelLabel,
   errorLabels,
   action,
 }: RefundButtonProps) {
@@ -49,7 +51,11 @@ export function RefundButton({
           {isPending ? pendingLabel : confirmLabel}
         </Button>
         {!isPending && (
-          <Button variant="ghost" onClick={() => setConfirming(false)}>
+          <Button
+            variant="ghost"
+            aria-label={cancelLabel}
+            onClick={() => setConfirming(false)}
+          >
             ✕
           </Button>
         )}

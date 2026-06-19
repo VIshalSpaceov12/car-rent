@@ -14,7 +14,7 @@ async function guardProvider(locale: string) {
   try {
     requireRole(user, 'provider', 'staff', 'admin');
   } catch {
-    redirect(user.role === 'admin' ? `/${locale}/admin` : `/${locale}/login`);
+    redirect(`/${locale}/login`);
   }
   if (user.role !== 'admin' && !user.providerId) redirect(`/${locale}/login`);
   return user;
@@ -27,6 +27,7 @@ export async function refundPayment(
 ): Promise<{ error: string } | null> {
   const user = await guardProvider(locale);
 
+  // Fetch payment (with booking) for tenant-scope check and booking-cancel decision.
   const payment = await prisma.payment.findUnique({
     where: { id: paymentId },
     include: { booking: true },
@@ -40,19 +41,23 @@ export async function refundPayment(
     return { error: 'forbidden' };
   }
 
-  if (payment.status !== 'PAID') {
-    return { error: 'not_refundable' };
-  }
-
   const bookingCurrentStatus = bookingStatusFromDb(payment.booking.status);
   const prePickupStatuses = new Set(['reserved', 'confirmed', 'vehicle-prepared']);
   const shouldCancelBooking = prePickupStatuses.has(bookingCurrentStatus);
 
-  await prisma.$transaction(async (tx) => {
-    await tx.payment.update({
-      where: { id: paymentId },
+  // Atomic PAID→REFUNDED: the where-clause scopes to paymentId+status+tenant so two
+  // concurrent requests cannot both flip the same payment (second gets count=0 → not_refundable).
+  const refunded = await prisma.$transaction(async (tx) => {
+    const res = await tx.payment.updateMany({
+      where: {
+        id: paymentId,
+        status: 'PAID',
+        ...(scope.providerId ? { providerId: scope.providerId } : {}),
+      },
       data: { status: paymentStatusToDb('refunded') as 'REFUNDED' },
     });
+
+    if (res.count !== 1) return false;
 
     if (shouldCancelBooking) {
       await tx.booking.update({
@@ -60,7 +65,11 @@ export async function refundPayment(
         data: { status: bookingStatusToDb('cancelled') as 'CANCELLED' },
       });
     }
+
+    return true;
   });
+
+  if (!refunded) return { error: 'not_refundable' };
 
   redirect(`/${locale}/dashboard/payments`);
 }

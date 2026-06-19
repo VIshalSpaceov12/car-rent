@@ -183,6 +183,7 @@
     "refund": "Refund",
     "refundConfirm": "Confirm refund?",
     "refunding": "Refunding…",
+    "cancel": "Cancel",
     "columns": {
       "booking": "Booking ref",
       "customer": "Customer",

@@ -183,6 +183,7 @@
     "refund": "استرداد",
     "refundConfirm": "تأكيد الاسترداد؟",
     "refunding": "جارٍ الاسترداد…",
+    "cancel": "إلغاء",
     "columns": {
       "booking": "رقم الحجز",
       "customer": "العميل",

@@ -27,6 +27,7 @@ export async function POST(
 
   const { id } = await params;
 
+  // Fetch payment (with booking) for tenant-scope check and booking-cancel decision.
   const payment = await prisma.payment.findUnique({
     where: { id },
     include: {
@@ -48,25 +49,24 @@ export async function POST(
     return NextResponse.json({ error: 'forbidden' }, { status: 403 });
   }
 
-  // Only a 'paid' payment can be refunded
-  if (payment.status !== 'PAID') {
-    return NextResponse.json(
-      { error: 'not_refundable', message: `Payment status is '${payment.status}', expected 'PAID'` },
-      { status: 422 }
-    );
-  }
-
-  const bookingCurrentStatus = bookingStatusFromDb(payment.booking.status);
-
   // Determine if booking is still pre-pickup (can be cancelled on refund)
+  const bookingCurrentStatus = bookingStatusFromDb(payment.booking.status);
   const prePickupStatuses = new Set(['reserved', 'confirmed', 'vehicle-prepared']);
   const shouldCancelBooking = prePickupStatuses.has(bookingCurrentStatus);
 
+  // Atomic PAID→REFUNDED: the where-clause scopes to both paymentId+status+tenant so two
+  // concurrent requests cannot both flip the same payment (second gets count=0 → 422).
   const updatedPayment = await prisma.$transaction(async (tx) => {
-    const pay = await tx.payment.update({
-      where: { id },
+    const res = await tx.payment.updateMany({
+      where: {
+        id,
+        status: 'PAID',
+        ...(scope.providerId ? { providerId: scope.providerId } : {}),
+      },
       data: { status: paymentStatusToDb('refunded') as 'REFUNDED' },
     });
+
+    if (res.count !== 1) return null;
 
     if (shouldCancelBooking) {
       await tx.booking.update({
@@ -75,8 +75,15 @@ export async function POST(
       });
     }
 
-    return pay;
+    return tx.payment.findUnique({ where: { id } });
   });
+
+  if (!updatedPayment) {
+    return NextResponse.json(
+      { error: 'not_refundable', message: `Payment status is '${payment.status}', expected 'PAID'` },
+      { status: 422 }
+    );
+  }
 
   return NextResponse.json(paymentToDTO(updatedPayment));
 }
