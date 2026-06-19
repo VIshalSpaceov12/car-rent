@@ -6,8 +6,9 @@ vi.mock('@/server/db', () => ({
     otp: {
       upsert: vi.fn(),
       findUnique: vi.fn(),
-      update: vi.fn(),
+      updateMany: vi.fn(),
     },
+    $executeRaw: vi.fn(),
   },
 }));
 
@@ -16,7 +17,8 @@ import { generateCode, issueOtp, verifyOtp, OtpError } from './otp';
 
 const mockUpsert = vi.mocked(prisma.otp.upsert);
 const mockFindUnique = vi.mocked(prisma.otp.findUnique);
-const mockUpdate = vi.mocked(prisma.otp.update);
+const mockUpdateMany = vi.mocked(prisma.otp.updateMany);
+const mockExecuteRaw = vi.mocked(prisma.$executeRaw);
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -91,22 +93,25 @@ describe('verifyOtp', () => {
       consumedAt: null,
       attempts: 0,
     } as never);
-    mockUpdate.mockResolvedValue({} as never);
+    // updateMany: atomic attempt increment succeeds (count: 1)
+    mockUpdateMany.mockResolvedValue({ count: 1 } as never);
+    // $executeRaw: atomic consume succeeds (1 row updated)
+    mockExecuteRaw.mockResolvedValue(1 as never);
     await expect(verifyOtp('b1', '123456')).resolves.toBeUndefined();
   });
 
-  it('sets consumedAt on success', async () => {
+  it('sets consumedAt via $executeRaw on success', async () => {
     const bcrypt = await import('bcrypt');
     const hash = await bcrypt.hash('654321', 10);
     mockFindUnique.mockResolvedValue({
       bookingId: 'b1', vehicleId: 'v1', codeHash: hash,
       expiresAt: future, consumedAt: null, attempts: 0,
     } as never);
-    mockUpdate.mockResolvedValue({} as never);
+    mockUpdateMany.mockResolvedValue({ count: 1 } as never);
+    mockExecuteRaw.mockResolvedValue(1 as never);
     await verifyOtp('b1', '654321');
-    const updateCall = mockUpdate.mock.calls[0]![0]!;
-    const updateData = updateCall.data as Record<string, unknown>;
-    expect(updateData.consumedAt).toBeInstanceOf(Date);
+    // $executeRaw was called once (the atomic consume UPDATE)
+    expect(mockExecuteRaw).toHaveBeenCalledTimes(1);
   });
 
   it('throws OtpError(not_found) when no OTP row exists', async () => {
@@ -146,22 +151,58 @@ describe('verifyOtp', () => {
     await expect(verifyOtp('b1', 'wrong0')).rejects.toMatchObject({ code: 'locked' });
   });
 
-  it('throws OtpError(invalid) and increments attempts on wrong code', async () => {
+  it('throws OtpError(invalid) and increments attempts on wrong code via updateMany', async () => {
     const bcrypt = await import('bcrypt');
     const hash = await bcrypt.hash('123456', 10);
     mockFindUnique.mockResolvedValue({
       bookingId: 'b1', vehicleId: 'v1', codeHash: hash,
       expiresAt: future, consumedAt: null, attempts: 2,
     } as never);
-    mockUpdate.mockResolvedValue({} as never);
+    // atomic increment succeeds (count: 1)
+    mockUpdateMany.mockResolvedValue({ count: 1 } as never);
     await expect(verifyOtp('b1', '999999')).rejects.toMatchObject({ code: 'invalid' });
-    const updateCall = mockUpdate.mock.calls[0]![0]!;
-    const updateData = updateCall.data as Record<string, unknown>;
-    expect(updateData.attempts).toBe(3);
+    // updateMany was called once with the conditional where clause
+    expect(mockUpdateMany).toHaveBeenCalledTimes(1);
+    const updateManyCall = mockUpdateMany.mock.calls[0]![0]!;
+    const data = updateManyCall.data as Record<string, unknown>;
+    expect(data.attempts).toEqual({ increment: 1 });
+  });
+
+  it('throws OtpError(consumed) when concurrent consume wins the race ($executeRaw returns 0)', async () => {
+    const bcrypt = await import('bcrypt');
+    const hash = await bcrypt.hash('123456', 10);
+    mockFindUnique.mockResolvedValue({
+      bookingId: 'b1', vehicleId: 'v1', codeHash: hash,
+      expiresAt: future, consumedAt: null, attempts: 0,
+    } as never);
+    // updateMany: increment succeeds
+    mockUpdateMany.mockResolvedValue({ count: 1 } as never);
+    // $executeRaw: concurrent request already consumed it (0 rows updated)
+    mockExecuteRaw.mockResolvedValue(0 as never);
+    await expect(verifyOtp('b1', '123456')).rejects.toMatchObject({ code: 'consumed' });
+  });
+
+  it('throws OtpError(locked) when concurrent request locks OTP (updateMany returns count: 0)', async () => {
+    const bcrypt = await import('bcrypt');
+    const hash = await bcrypt.hash('123456', 10);
+    // Initial read: attempts still under limit (race: concurrent req pushed it to cap)
+    mockFindUnique
+      .mockResolvedValueOnce({
+        bookingId: 'b1', vehicleId: 'v1', codeHash: hash,
+        expiresAt: future, consumedAt: null, attempts: 4,
+      } as never)
+      // Re-fetch after count===0: attempts now at cap, consumedAt still null
+      .mockResolvedValueOnce({
+        bookingId: 'b1', vehicleId: 'v1', codeHash: hash,
+        expiresAt: future, consumedAt: null, attempts: 5,
+      } as never);
+    // concurrent request already incremented to cap; our atomic update finds nothing
+    mockUpdateMany.mockResolvedValue({ count: 0 } as never);
+    await expect(verifyOtp('b1', '123456')).rejects.toMatchObject({ code: 'locked' });
   });
 
   it('second verify after success (consumed) is rejected', async () => {
-    // Simulate: first call sets consumedAt; second call sees consumedAt set
+    // Simulate: first call succeeds; second call sees consumedAt set
     const bcrypt = await import('bcrypt');
     const hash = await bcrypt.hash('123456', 10);
     // First call: OTP is fresh, succeeds
@@ -169,7 +210,8 @@ describe('verifyOtp', () => {
       bookingId: 'b1', vehicleId: 'v1', codeHash: hash,
       expiresAt: future, consumedAt: null, attempts: 0,
     } as never);
-    mockUpdate.mockResolvedValue({} as never);
+    mockUpdateMany.mockResolvedValue({ count: 1 } as never);
+    mockExecuteRaw.mockResolvedValue(1 as never);
     await verifyOtp('b1', '123456');
     // Second call: OTP row now has consumedAt set
     mockFindUnique.mockResolvedValueOnce({
