@@ -316,6 +316,7 @@
       "adding": "Creating…",
       "cancel": "Cancel",
       "errorSave": "Failed to create. Check your inputs.",
+      "errorEmailTaken": "Email already in use.",
       "tempPassword": "Temporary password",
       "tempPasswordHint": "Share this password securely — it will not be shown again.",
       "done": "Done"

@@ -46,7 +46,7 @@ export function StaffClient({ initialStaff }: Props) {
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
         if (err?.error === 'email_taken') {
-          setFormError('Email already exists.');
+          setFormError(t('form.errorEmailTaken'));
         } else {
           setFormError(t('form.errorSave'));
         }
