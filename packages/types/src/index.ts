@@ -33,7 +33,7 @@ export const bookingStatusFromDb = (s: string) => fromDb(s) as BookingStatus;
 
 // ---- DTOs ---------------------------------------------------------------
 export const loginRequestSchema = z.object({
-  email: z.string().regex(/^[^\s@]+@[^\s@]+\.[^\s@]+$/),
+  email: z.string().email(),
   password: z.string().min(1),
 });
 export type LoginRequest = z.infer<typeof loginRequestSchema>;

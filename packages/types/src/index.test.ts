@@ -17,7 +17,7 @@ describe('@car-rental/types', () => {
     expect(roleFromDb('PROVIDER')).toBe('provider');
   });
   it('validates a login request', () => {
-    expect(loginRequestSchema.safeParse({ email: 'a@b.c', password: 'x' }).success).toBe(true);
+    expect(loginRequestSchema.safeParse({ email: 'a@b.co', password: 'x' }).success).toBe(true);
     expect(loginRequestSchema.safeParse({ email: 'nope', password: 'x' }).success).toBe(false);
   });
 });
