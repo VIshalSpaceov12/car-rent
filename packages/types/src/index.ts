@@ -207,25 +207,25 @@ export interface BookingDTO {
 // provider/staff drive operational transitions; customer can only cancel from early states
 export const BOOKING_TRANSITIONS: Record<
   BookingStatus,
-  Array<{ next: BookingStatus; allowedRoles: Array<'provider' | 'staff' | 'customer'> }>
+  Array<{ next: BookingStatus; allowedRoles: Array<'provider' | 'staff' | 'customer' | 'admin'> }>
 > = {
   reserved: [
-    { next: 'confirmed',  allowedRoles: ['provider', 'staff'] },
-    { next: 'rejected',   allowedRoles: ['provider', 'staff'] },
-    { next: 'cancelled',  allowedRoles: ['customer', 'provider', 'staff'] },
+    { next: 'confirmed',  allowedRoles: ['provider', 'staff', 'admin'] },
+    { next: 'rejected',   allowedRoles: ['provider', 'staff', 'admin'] },
+    { next: 'cancelled',  allowedRoles: ['customer', 'provider', 'staff', 'admin'] },
   ],
   confirmed: [
-    { next: 'vehicle-prepared', allowedRoles: ['provider', 'staff'] },
-    { next: 'cancelled',        allowedRoles: ['customer', 'provider', 'staff'] },
+    { next: 'vehicle-prepared', allowedRoles: ['provider', 'staff', 'admin'] },
+    { next: 'cancelled',        allowedRoles: ['customer', 'provider', 'staff', 'admin'] },
   ],
   'vehicle-prepared': [
-    { next: 'picked-up', allowedRoles: ['provider', 'staff'] },
+    { next: 'picked-up', allowedRoles: ['provider', 'staff', 'admin'] },
   ],
   'picked-up': [
-    { next: 'returned', allowedRoles: ['provider', 'staff'] },
+    { next: 'returned', allowedRoles: ['provider', 'staff', 'admin'] },
   ],
   returned: [
-    { next: 'completed', allowedRoles: ['provider', 'staff'] },
+    { next: 'completed', allowedRoles: ['provider', 'staff', 'admin'] },
   ],
   completed: [],
   rejected: [],
