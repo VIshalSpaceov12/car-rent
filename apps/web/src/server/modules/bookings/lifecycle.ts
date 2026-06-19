@@ -37,3 +37,21 @@ export function assertTransition(
     );
   }
 }
+
+/**
+ * Payment/system-driven reserved→confirmed guard.
+ * Pure validation — no DB calls. The payment route calls this to assert the
+ * booking is in 'reserved' state before it writes the DB update itself,
+ * keeping this module dependency-free and unit-testable.
+ *
+ * Wire status values (lowercase/kebab) are expected here (same as BookingStatus).
+ * Throws LifecycleError if the booking is not in 'reserved' state.
+ */
+export function confirmAfterPayment(currentStatus: BookingStatus): void {
+  if (currentStatus !== 'reserved') {
+    throw new LifecycleError(
+      'ILLEGAL_TRANSITION',
+      `confirmAfterPayment requires booking status 'reserved', got '${currentStatus}'`
+    );
+  }
+}
