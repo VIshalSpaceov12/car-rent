@@ -6,6 +6,9 @@ const secret = () => {
 };
 export const signJwt = (userId: string) => jwt.sign({ userId }, secret(), { expiresIn: '30d' });
 export const verifyJwt = (token: string): { userId: string } | null => {
-  try { const d = jwt.verify(token, secret()) as { userId: string }; return { userId: d.userId }; }
-  catch { return null; }
+  try {
+    const d = jwt.verify(token, secret());
+    if (typeof d !== 'object' || d === null || typeof (d as Record<string, unknown>).userId !== 'string') return null;
+    return { userId: (d as Record<string, unknown>).userId as string };
+  } catch { return null; }
 };

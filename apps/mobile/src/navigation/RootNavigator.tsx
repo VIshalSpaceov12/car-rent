@@ -2,7 +2,8 @@ import { useCallback, useEffect, useState } from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { NavigationContainer } from '@react-navigation/native';
 import { useTheme } from '@car-rental/tokens';
-import { getToken } from '@/auth/storage';
+import { me } from '@/api/client';
+import { getToken, clearToken } from '@/auth/storage';
 import { OnboardingScreen } from '@/screens/Onboarding';
 import { LoginScreen } from '@/screens/Login';
 import { TabNavigator } from './TabNavigator';
@@ -21,10 +22,21 @@ export function RootNavigator() {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    getToken().then((t) => {
-      setToken(t);
+    (async () => {
+      const t = await getToken();
+      if (!t) {
+        setReady(true);
+        return;
+      }
+      const user = await me();
+      if (!user) {
+        await clearToken();
+        setToken(null);
+      } else {
+        setToken(t);
+      }
       setReady(true);
-    });
+    })();
   }, []);
 
   const handleSuccess = useCallback(async () => {

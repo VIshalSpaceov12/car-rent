@@ -30,4 +30,9 @@ describe('@car-rental/tokens', () => {
     expect(vars['--space-md']).toBe('16px');
     expect(vars['--radius-card']).toBe('18px');
   });
+  it('keeps scheme own gradient when no brand override is provided', () => {
+    const t = createTheme('light');
+    expect(t.color.gradientPrimary).toEqual(['#F97316', '#EA580C']);
+    expect(lightTheme.color.gradientPrimary).toEqual(['#F97316', '#EA580C']);
+  });
 });
