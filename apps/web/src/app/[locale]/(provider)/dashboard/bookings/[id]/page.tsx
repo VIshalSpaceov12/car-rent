@@ -24,6 +24,7 @@ const BOOKING_INCLUDE = {
   customer: { select: { name: true, email: true } },
   pickupBranch: { select: { name: true } },
   dropoffBranch: { select: { name: true } },
+  payment: true,
 } as const;
 
 /** Statuses that a provider/staff can action (legal next states for the role). */
@@ -160,6 +161,32 @@ export default async function BookingDetailPage({
           </dd>
         </dl>
       </section>
+
+      {/* Payment */}
+      {booking.payment && (
+        <section className="rounded-cr-card border border-cr-border bg-cr-surface p-cr-md mb-cr-md">
+          <h2 className="text-sm font-semibold text-cr-text-muted uppercase mb-cr-sm">
+            {t('detail.payment')}
+          </h2>
+          <dl className="grid grid-cols-2 gap-x-cr-lg gap-y-cr-xs text-sm">
+            <dt className="text-cr-text-muted">{t('detail.paymentAmount')}</dt>
+            <dd className="text-cr-text text-end font-semibold">
+              {booking.payment.currency} {booking.payment.amount.toFixed(2)}
+            </dd>
+            <dt className="text-cr-text-muted">{t('detail.paymentMethod')}</dt>
+            <dd className="text-cr-text text-end capitalize">
+              {t(`detail.paymentMethodValue.${booking.payment.method}`)}
+            </dd>
+            <dt className="text-cr-text-muted">{t('detail.paymentStatus')}</dt>
+            <dd className="text-end">
+              <StatusChip
+                status={booking.payment.status}
+                label={t(`detail.paymentStatusValue.${booking.payment.status}`)}
+              />
+            </dd>
+          </dl>
+        </section>
+      )}
 
       {/* Transition actions */}
       {actionItems.length > 0 && (

@@ -13,7 +13,8 @@
       "fleet": "Fleet",
       "categories": "Categories",
       "branches": "Branches",
-      "bookings": "Bookings"
+      "bookings": "Bookings",
+      "payments": "Payments"
     }
   },
   "admin": {
@@ -158,7 +159,53 @@
       "tax": "Tax",
       "serviceCharge": "Service charge",
       "total": "Total",
+      "actions": "Actions",
+      "payment": "Payment",
+      "paymentAmount": "Paid amount",
+      "paymentMethod": "Method",
+      "paymentStatus": "Status",
+      "paymentMethodValue": {
+        "card": "Card",
+        "cash-on-delivery": "Cash on delivery"
+      },
+      "paymentStatusValue": {
+        "pending": "Pending",
+        "paid": "Paid",
+        "failed": "Failed",
+        "refunded": "Refunded"
+      }
+    }
+  },
+  "payments": {
+    "title": "Payments",
+    "noPayments": "No payments yet.",
+    "backToDashboard": "← Back to dashboard",
+    "refund": "Refund",
+    "refundConfirm": "Confirm refund?",
+    "refunding": "Refunding…",
+    "columns": {
+      "booking": "Booking ref",
+      "customer": "Customer",
+      "amount": "Amount",
+      "method": "Method",
+      "status": "Status",
+      "date": "Date",
       "actions": "Actions"
+    },
+    "method": {
+      "card": "Card",
+      "cash-on-delivery": "Cash on delivery"
+    },
+    "status": {
+      "pending": "Pending",
+      "paid": "Paid",
+      "failed": "Failed",
+      "refunded": "Refunded"
+    },
+    "error": {
+      "notFound": "Payment not found.",
+      "forbidden": "You do not have permission.",
+      "notRefundable": "Only paid payments can be refunded."
     }
   },
   "branches": {

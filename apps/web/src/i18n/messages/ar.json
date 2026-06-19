@@ -13,7 +13,8 @@
       "fleet": "الأسطول",
       "categories": "الفئات",
       "branches": "الفروع",
-      "bookings": "الحجوزات"
+      "bookings": "الحجوزات",
+      "payments": "المدفوعات"
     }
   },
   "admin": {
@@ -158,7 +159,53 @@
       "tax": "الضريبة",
       "serviceCharge": "رسوم الخدمة",
       "total": "الإجمالي",
+      "actions": "الإجراءات",
+      "payment": "الدفع",
+      "paymentAmount": "المبلغ المدفوع",
+      "paymentMethod": "طريقة الدفع",
+      "paymentStatus": "حالة الدفع",
+      "paymentMethodValue": {
+        "card": "بطاقة",
+        "cash-on-delivery": "الدفع عند الاستلام"
+      },
+      "paymentStatusValue": {
+        "pending": "معلق",
+        "paid": "مدفوع",
+        "failed": "فشل",
+        "refunded": "مُسترد"
+      }
+    }
+  },
+  "payments": {
+    "title": "المدفوعات",
+    "noPayments": "لا توجد مدفوعات بعد.",
+    "backToDashboard": "→ العودة إلى لوحة التحكم",
+    "refund": "استرداد",
+    "refundConfirm": "تأكيد الاسترداد؟",
+    "refunding": "جارٍ الاسترداد…",
+    "columns": {
+      "booking": "رقم الحجز",
+      "customer": "العميل",
+      "amount": "المبلغ",
+      "method": "الطريقة",
+      "status": "الحالة",
+      "date": "التاريخ",
       "actions": "الإجراءات"
+    },
+    "method": {
+      "card": "بطاقة",
+      "cash-on-delivery": "الدفع عند الاستلام"
+    },
+    "status": {
+      "pending": "معلق",
+      "paid": "مدفوع",
+      "failed": "فشل",
+      "refunded": "مُسترد"
+    },
+    "error": {
+      "notFound": "الدفعة غير موجودة.",
+      "forbidden": "ليس لديك صلاحية.",
+      "notRefundable": "يمكن استرداد المدفوعات المؤكدة فقط."
     }
   },
   "branches": {
