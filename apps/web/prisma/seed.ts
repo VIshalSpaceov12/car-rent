@@ -229,6 +229,35 @@ async function main() {
     });
   }
 
-  console.log('Seeded provider DriveHub + 4 users + 3 categories + 2 branches + 5 vehicles + 2 bookings (password:', PASS, ')');
+  // ---- Demo payment: PAID for the confirmed booking -----------------------
+  // Find the confirmed booking (Booking 2: Ford Explorer, CONFIRMED)
+  const confirmedBooking = await prisma.booking.findFirst({
+    where: {
+      providerId: provider.id,
+      customerId: customer.id,
+      vehicleId: vehicle2.id,
+      startDate: new Date('2026-08-01'),
+      status: 'CONFIRMED',
+    },
+  });
+  if (confirmedBooking) {
+    const existingPayment = await prisma.payment.findUnique({
+      where: { bookingId: confirmedBooking.id },
+    });
+    if (!existingPayment) {
+      await prisma.payment.create({
+        data: {
+          providerId: provider.id,
+          bookingId: confirmedBooking.id,
+          amount: confirmedBooking.totalAmount,
+          currency: confirmedBooking.currency,
+          method: 'CARD',
+          status: 'PAID',
+        },
+      });
+    }
+  }
+
+  console.log('Seeded provider DriveHub + 4 users + 3 categories + 2 branches + 5 vehicles + 2 bookings + 1 payment (password:', PASS, ')');
 }
 main().finally(() => prisma.$disconnect());

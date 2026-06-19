@@ -10,7 +10,7 @@ import {
   Alert,
 } from 'react-native';
 import { useTheme } from '@car-rental/tokens';
-import type { BookingQuote, RentalPlan } from '@car-rental/types';
+import type { BookingDTO, BookingQuote, RentalPlan } from '@car-rental/types';
 import { RENTAL_PLANS } from '@car-rental/types';
 import { quoteBooking, createBooking } from '@/api/client';
 import { i18n } from '@/i18n';
@@ -19,7 +19,8 @@ type Props = {
   vehicleId: string;
   vehicleName: string;
   pricePerDay: number;
-  onBookingCreated?: (bookingId: string) => void;
+  /** Called with (bookingId, bookingDTO) after a booking is successfully created */
+  onBookingCreated?: (bookingId: string, booking: BookingDTO) => void;
 };
 
 function todayIso(): string {
@@ -89,8 +90,7 @@ export function BookingScreen({ vehicleId, vehicleName, pricePerDay, onBookingCr
     const booking = await createBooking({ vehicleId, startDate, endDate, plan });
     setSubmitting(false);
     if (booking) {
-      Alert.alert(i18n.t('booking.success'));
-      onBookingCreated?.(booking.id);
+      onBookingCreated?.(booking.id, booking);
     } else {
       Alert.alert(i18n.t('booking.error'));
     }

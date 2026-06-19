@@ -7,6 +7,8 @@ import type {
   BookingQuote,
   BookingCreateRequest,
   BookingDTO,
+  PaymentDTO,
+  PaymentMethod,
 } from '@car-rental/types';
 import { getToken } from '@/auth/storage';
 
@@ -80,4 +82,30 @@ export async function createBooking(req: BookingCreateRequest): Promise<BookingD
 export async function listBookings(): Promise<BookingDTO[]> {
   const res = await authedFetch('/api/bookings');
   return res.ok ? ((await res.json()) as BookingDTO[]) : [];
+}
+
+export interface PayBookingInput {
+  method: PaymentMethod;
+  /** MOCK ONLY — 'success' | 'fail'. Only relevant for method='card'. */
+  cardOutcome?: 'success' | 'fail';
+}
+
+export interface PayBookingResult {
+  payment: PaymentDTO;
+  booking: BookingDTO;
+}
+
+/**
+ * Initiates a (mock) payment for a booking.
+ * Returns null on non-2xx (e.g. 409 already paid, 404 not found).
+ */
+export async function payBooking(
+  bookingId: string,
+  input: PayBookingInput,
+): Promise<PayBookingResult | null> {
+  const res = await authedFetch(`/api/bookings/${bookingId}/pay`, {
+    method: 'POST',
+    body: JSON.stringify(input),
+  });
+  return res.ok ? ((await res.json()) as PayBookingResult) : null;
 }

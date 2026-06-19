@@ -55,6 +55,18 @@ enum RentalPlan {
   LONG_TERM
 }
 
+enum PaymentMethod {
+  CARD
+  CASH_ON_DELIVERY
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
 model Provider {
   id            String   @id @default(cuid())
   name          String
@@ -72,6 +84,7 @@ model Provider {
   branches           Branch[]
   vehicles           Vehicle[]
   bookings           Booking[]
+  payments           Payment[]
 }
 
 model VehicleCategory {
@@ -202,8 +215,26 @@ model Booking {
   vehicle       Vehicle  @relation(fields: [vehicleId], references: [id])
   pickupBranch  Branch?  @relation("pickup",  fields: [pickupBranchId],  references: [id])
   dropoffBranch Branch?  @relation("dropoff", fields: [dropoffBranchId], references: [id])
+  payment       Payment?
 
   @@index([providerId])
   @@index([customerId])
   @@index([vehicleId])
+}
+
+model Payment {
+  id         String        @id @default(cuid())
+  providerId String
+  bookingId  String        @unique
+  amount     Decimal       @db.Decimal(10, 2)
+  currency   String
+  method     PaymentMethod
+  status     PaymentStatus @default(PENDING)
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+
+  booking  Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  provider Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+
+  @@index([providerId])
 }

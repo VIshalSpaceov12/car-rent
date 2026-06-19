@@ -1,4 +1,5 @@
 const MAP: Record<string, string> = {
+  // booking statuses
   confirmed: 'var(--color-success)',
   completed: 'var(--color-success)',
   'vehicle-prepared': 'var(--color-info)',
@@ -7,6 +8,11 @@ const MAP: Record<string, string> = {
   rejected: 'var(--color-danger)',
   cancelled: 'var(--color-danger)',
   reserved: 'var(--color-textSubtle)',
+  // payment statuses
+  paid: 'var(--color-success)',
+  pending: 'var(--color-textSubtle)',
+  failed: 'var(--color-danger)',
+  refunded: 'var(--color-info)',
 };
 
 export function StatusChip({ status, label }: { status: string; label: string }) {
