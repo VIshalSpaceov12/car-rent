@@ -13,6 +13,11 @@ import {
   paymentStatusToDb, paymentStatusFromDb,
   RETURN_CONDITIONS, returnConditionToDb, returnConditionFromDb,
   otpVerifySchema, contractSignSchema, inspectionSchema,
+  SUPPORT_STATUSES, DISCOUNT_KINDS,
+  supportStatusToDb, supportStatusFromDb,
+  discountKindToDb, discountKindFromDb,
+  addressCreateSchema, supportTicketCreateSchema,
+  discountCreateSchema, maintenanceCreateSchema,
 } from './index';
 
 describe('@car-rental/types', () => {
@@ -265,6 +270,92 @@ describe('@car-rental/types', () => {
 
   it('inspectionSchema: rejects invalid condition', () => {
     const result = inspectionSchema.safeParse({ condition: 'totaled' });
+    expect(result.success).toBe(false);
+  });
+
+  // ---- Engagement/Ops enums + schemas -------------------------------------
+  it('exposes SUPPORT_STATUSES', () => {
+    expect(SUPPORT_STATUSES).toEqual(['open', 'resolved']);
+  });
+
+  it('exposes DISCOUNT_KINDS', () => {
+    expect(DISCOUNT_KINDS).toEqual(['percent', 'fixed']);
+  });
+
+  it('maps SupportStatus wire ⇄ db', () => {
+    expect(supportStatusToDb('open')).toBe('OPEN');
+    expect(supportStatusFromDb('RESOLVED')).toBe('resolved');
+  });
+
+  it('maps DiscountKind wire ⇄ db', () => {
+    expect(discountKindToDb('percent')).toBe('PERCENT');
+    expect(discountKindFromDb('FIXED')).toBe('fixed');
+  });
+
+  it('addressCreateSchema: accepts a valid address', () => {
+    const result = addressCreateSchema.safeParse({
+      label: 'Home',
+      line1: '123 Main St',
+      city: 'New York',
+      country: 'US',
+    });
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data.isDefault).toBe(false);
+  });
+
+  it('addressCreateSchema: rejects missing required fields', () => {
+    const result = addressCreateSchema.safeParse({ label: 'Home' });
+    expect(result.success).toBe(false);
+  });
+
+  it('supportTicketCreateSchema: accepts a valid ticket', () => {
+    const result = supportTicketCreateSchema.safeParse({
+      subject: 'My booking issue',
+      body: 'I cannot find my booking confirmation.',
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it('supportTicketCreateSchema: rejects empty body', () => {
+    const result = supportTicketCreateSchema.safeParse({ subject: 'Issue', body: '' });
+    expect(result.success).toBe(false);
+  });
+
+  it('discountCreateSchema: accepts a valid percent discount', () => {
+    const result = discountCreateSchema.safeParse({
+      code: 'WELCOME10',
+      kind: 'percent',
+      value: 10,
+      active: true,
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it('discountCreateSchema: rejects lowercase code', () => {
+    const result = discountCreateSchema.safeParse({
+      code: 'welcome10',
+      kind: 'percent',
+      value: 10,
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it('maintenanceCreateSchema: accepts a valid record', () => {
+    const result = maintenanceCreateSchema.safeParse({
+      vehicleId: 'v123',
+      description: 'Oil change',
+      date: '2026-06-01',
+      cost: 75,
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it('maintenanceCreateSchema: rejects invalid date format', () => {
+    const result = maintenanceCreateSchema.safeParse({
+      vehicleId: 'v123',
+      description: 'Oil change',
+      date: '01/06/2026',
+    });
     expect(result.success).toBe(false);
   });
 });

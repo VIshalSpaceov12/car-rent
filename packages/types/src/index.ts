@@ -295,6 +295,118 @@ export const inspectionSchema = z.object({
 });
 export type InspectionInput = z.infer<typeof inspectionSchema>;
 
+// ---- Engagement / Ops enums ---------------------------------------------
+
+export const SUPPORT_STATUSES = ['open', 'resolved'] as const;
+export type SupportStatus = (typeof SUPPORT_STATUSES)[number];
+
+export const DISCOUNT_KINDS = ['percent', 'fixed'] as const;
+export type DiscountKind = (typeof DISCOUNT_KINDS)[number];
+
+// wire ⇄ db mappers for new enums
+export const supportStatusToDb = (s: SupportStatus): string => toDb(s);
+export const supportStatusFromDb = (s: string): SupportStatus => fromDb(s) as SupportStatus;
+export const discountKindToDb = (k: DiscountKind): string => toDb(k);
+export const discountKindFromDb = (k: string): DiscountKind => fromDb(k) as DiscountKind;
+
+// ---- LoyaltyAccount + LoyaltyEntry DTOs ---------------------------------
+export interface LoyaltyAccountDTO {
+  id: string;
+  userId: string;
+  points: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface LoyaltyEntryDTO {
+  id: string;
+  userId: string;
+  delta: number;
+  reason: string;
+  bookingId?: string;
+  createdAt: string;
+}
+
+// ---- Address DTO + schema ------------------------------------------------
+export const addressCreateSchema = z.object({
+  label: z.string().min(1).max(100),
+  line1: z.string().min(1).max(255),
+  city: z.string().min(1).max(100),
+  country: z.string().min(1).max(100),
+  isDefault: z.boolean().optional().default(false),
+});
+export type AddressCreateInput = z.infer<typeof addressCreateSchema>;
+
+export interface AddressDTO {
+  id: string;
+  userId: string;
+  label: string;
+  line1: string;
+  city: string;
+  country: string;
+  isDefault: boolean;
+  createdAt: string;
+}
+
+// ---- SupportTicket DTO + schema ------------------------------------------
+export const supportTicketCreateSchema = z.object({
+  subject: z.string().min(1).max(255),
+  body: z.string().min(1),
+});
+export type SupportTicketCreateInput = z.infer<typeof supportTicketCreateSchema>;
+
+export interface SupportTicketDTO {
+  id: string;
+  providerId: string;
+  userId: string;
+  subject: string;
+  body: string;
+  status: SupportStatus;
+  response?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// ---- DiscountCode DTO + schema -------------------------------------------
+export const discountCreateSchema = z.object({
+  code: z.string().min(1).max(50).regex(/^[A-Z0-9_-]+$/, 'Code must be uppercase alphanumeric'),
+  kind: z.enum(DISCOUNT_KINDS),
+  value: z.number().positive(),
+  active: z.boolean().default(true),
+  expiresAt: z.string().datetime().optional(),
+});
+export type DiscountCreateInput = z.infer<typeof discountCreateSchema>;
+
+export interface DiscountCodeDTO {
+  id: string;
+  providerId: string;
+  code: string;
+  kind: DiscountKind;
+  value: number;
+  active: boolean;
+  expiresAt?: string;
+  createdAt: string;
+}
+
+// ---- MaintenanceRecord DTO + schema --------------------------------------
+export const maintenanceCreateSchema = z.object({
+  vehicleId: z.string().min(1),
+  description: z.string().min(1),
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'ISO date YYYY-MM-DD'),
+  cost: z.number().nonnegative().optional(),
+});
+export type MaintenanceCreateInput = z.infer<typeof maintenanceCreateSchema>;
+
+export interface MaintenanceRecordDTO {
+  id: string;
+  providerId: string;
+  vehicleId: string;
+  description: string;
+  date: string;
+  cost?: number;
+  createdAt: string;
+}
+
 // ---- Booking lifecycle transition map ------------------------------------
 // Maps current status -> list of { next, allowedRoles }
 // provider/staff drive operational transitions; customer can only cancel from early states

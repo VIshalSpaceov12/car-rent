@@ -258,6 +258,72 @@ async function main() {
     }
   }
 
-  console.log('Seeded provider DriveHub + 4 users + 3 categories + 2 branches + 5 vehicles + 2 bookings + 1 payment (password:', PASS, ')');
+  // ---- Engagement / Ops seed data -----------------------------------------
+
+  // LoyaltyAccount for customer@demo.test
+  const customerUser = await prisma.user.findUniqueOrThrow({ where: { email: 'customer@demo.test' } });
+  await prisma.loyaltyAccount.upsert({
+    where: { userId: customerUser.id },
+    update: {},
+    create: { userId: customerUser.id, points: 150 },
+  });
+
+  // LoyaltyEntry — welcome bonus (idempotent via findFirst guard)
+  const existingWelcomeEntry = await prisma.loyaltyEntry.findFirst({
+    where: { userId: customerUser.id, reason: 'Welcome bonus' },
+  });
+  if (!existingWelcomeEntry) {
+    await prisma.loyaltyEntry.create({
+      data: { userId: customerUser.id, delta: 150, reason: 'Welcome bonus' },
+    });
+  }
+
+  // Saved address for customer@demo.test
+  const existingAddress = await prisma.address.findFirst({
+    where: { userId: customerUser.id, label: 'Home' },
+  });
+  if (!existingAddress) {
+    await prisma.address.create({
+      data: {
+        userId: customerUser.id,
+        label: 'Home',
+        line1: '42 Elm Street',
+        city: 'New York',
+        country: 'US',
+        isDefault: true,
+      },
+    });
+  }
+
+  // DiscountCode WELCOME10 for DriveHub (percent 10%)
+  await prisma.discountCode.upsert({
+    where: { providerId_code: { providerId: provider.id, code: 'WELCOME10' } },
+    update: {},
+    create: {
+      providerId: provider.id,
+      code: 'WELCOME10',
+      kind: 'PERCENT',
+      value: 10,
+      active: true,
+    },
+  });
+
+  // Open support ticket from customer
+  const existingTicket = await prisma.supportTicket.findFirst({
+    where: { userId: customerUser.id, subject: 'Issue with my booking confirmation' },
+  });
+  if (!existingTicket) {
+    await prisma.supportTicket.create({
+      data: {
+        providerId: provider.id,
+        userId: customerUser.id,
+        subject: 'Issue with my booking confirmation',
+        body: 'I booked a Toyota Corolla but did not receive a confirmation email. Please help.',
+        status: 'OPEN',
+      },
+    });
+  }
+
+  console.log('Seeded provider DriveHub + 4 users + 3 categories + 2 branches + 5 vehicles + 2 bookings + 1 payment + engagement data (password:', PASS, ')');
 }
 main().finally(() => prisma.$disconnect());
