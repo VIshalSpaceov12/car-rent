@@ -155,3 +155,79 @@ export interface VehicleBrowseQuery {
   maxPrice?: number;
   q?: string;
 }
+
+// ---- Booking schemas + DTOs ----------------------------------------------
+
+export const bookingQuoteRequestSchema = z.object({
+  vehicleId: z.string().min(1),
+  startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'ISO date YYYY-MM-DD'),
+  endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'ISO date YYYY-MM-DD'),
+  plan: z.enum(RENTAL_PLANS),
+  pickupBranchId: z.string().optional(),
+  dropoffBranchId: z.string().optional(),
+});
+export type BookingQuoteRequest = z.infer<typeof bookingQuoteRequestSchema>;
+
+// BookingCreateRequest = same fields as quote request
+export const bookingCreateRequestSchema = bookingQuoteRequestSchema;
+export type BookingCreateRequest = z.infer<typeof bookingCreateRequestSchema>;
+
+export interface BookingQuote {
+  days: number;
+  baseRatePerDay: number;
+  planMultiplier: number;
+  seasonalMultiplier: number;
+  subtotal: number;
+  taxRatePct: number;
+  taxAmount: number;
+  serviceCharge: number;
+  total: number;
+  currency: string;
+}
+
+export interface BookingDTO {
+  id: string;
+  status: BookingStatus;
+  vehicle: { id: string; name: string };
+  startDate: string;
+  endDate: string;
+  plan: RentalPlan;
+  pickupBranchName?: string;
+  dropoffBranchName?: string;
+  baseAmount: number;
+  taxAmount: number;
+  serviceCharge: number;
+  totalAmount: number;
+  currency: string;
+  createdAt: string;
+}
+
+// ---- Booking lifecycle transition map ------------------------------------
+// Maps current status -> list of { next, allowedRoles }
+// provider/staff drive operational transitions; customer can only cancel from early states
+export const BOOKING_TRANSITIONS: Record<
+  BookingStatus,
+  Array<{ next: BookingStatus; allowedRoles: Array<'provider' | 'staff' | 'customer' | 'admin'> }>
+> = {
+  reserved: [
+    { next: 'confirmed',  allowedRoles: ['provider', 'staff', 'admin'] },
+    { next: 'rejected',   allowedRoles: ['provider', 'staff', 'admin'] },
+    { next: 'cancelled',  allowedRoles: ['customer', 'provider', 'staff', 'admin'] },
+  ],
+  confirmed: [
+    { next: 'vehicle-prepared', allowedRoles: ['provider', 'staff', 'admin'] },
+    { next: 'cancelled',        allowedRoles: ['customer', 'provider', 'staff', 'admin'] },
+  ],
+  'vehicle-prepared': [
+    { next: 'picked-up', allowedRoles: ['provider', 'staff', 'admin'] },
+  ],
+  'picked-up': [
+    { next: 'returned', allowedRoles: ['provider', 'staff', 'admin'] },
+  ],
+  returned: [
+    { next: 'completed', allowedRoles: ['provider', 'staff', 'admin'] },
+  ],
+  completed: [],
+  rejected: [],
+  cancelled: [],
+};

@@ -16,14 +16,16 @@ Phased roadmap for the white-label car-rental platform. **Goal = the full platfo
 | **0 — Foundation + design system** | Monorepo + tooling; `@car-rental/types` + `@car-rental/tokens` (Sunset Drive); Next.js shell (Tailwind↔tokens, i18n/RTL, DAL, Prisma+Postgres, dual auth, `/dashboard`+`/admin`+`/api` shells, login); Expo shell (nav, theme, i18n, api client, login); multi-tenant base + seed. | Auth e2e on all 3 surfaces (customer→mobile, provider→`/dashboard`, admin→`/admin`); DB migrate+seed; `typecheck`+`lint`+`test` green. |
 | **1 — Fleet & catalog** | Provider fleet CRUD, categories, branches; customer browse/search/filter/details. | Provider creates a vehicle → appears in mobile browse + detail. |
 | **2 — Booking core** | Booking customization (dates/branch/plan), dynamic + seasonal pricing, itemized checkout quote, lifecycle state machine (server-authoritative transitions). | Customer creates booking; illegal transitions rejected. |
-| **3 — Payments** | Stripe (tokenized) + cash-on-delivery, refunds, financial records. PCI: no raw card data logged/stored. | Pay moves `reserved → confirmed`; failed pay stays unpaid. *Security review.* |
+| **3 — Payments (DUMMY)** | **Dummy/mock payment flow only** (no real gateway/PCI): a mock-card pay (configurable success/failure) + cash-on-delivery; Payment record + status; refund = status flip. Real Stripe/PayPal integration deferred. | Mock pay moves `reserved → confirmed`; failed mock pay stays unpaid. |
 | **4 — OTP lock-box** | OTP issuance/verification bound to booking+vehicle+window, digital contract signing, return inspection. | Keyless pickup e2e: issue OTP → verify → sign → `picked-up`. *Security review.* |
-| **5 — Realtime & notifications** | Booking-status push (SSE/managed realtime), Twilio SMS + FCM push. | Status change on web appears live on mobile. |
+| **5 — Realtime (notifications SKIPPED)** | Realtime booking-status sync (SSE) only. **Notifications (Twilio SMS + FCM push) SKIPPED for now** — at most in-app toasts. | Status change on web appears live on mobile. |
 | **6 — Engagement & ops** | History/receipts, loyalty, addresses, support, digital docs; provider analytics/marketing/maintenance/staff/insurance. | Customer re-books from history; provider runs a promo + sees analytics. |
 | **7 — Admin platform** | Tenant approve/suspend, provider onboarding, platform-wide analytics, global settings. | Admin onboards a new provider with no code change. |
 | **8 — i18n + white-label hardening + polish** | Full AR/EN/RTL pass, per-provider theming across all surfaces, reduce-motion, perf. | EN+AR verified on every screen; provider brand override flows end-to-end. |
 
 > Admin is first-class: a minimal admin shell + provider record land in **Phase 0**; depth (analytics, onboarding flows) is **Phase 7**.
+
+> **Scope note (2026-06-19, client):** Payments use a **dummy/mock flow** only (no real gateway/PCI). **Notifications (push/SMS) are skipped** — in-app feedback only. Both can be slotted in later without reworking the booking/payment data model.
 
 ---
 

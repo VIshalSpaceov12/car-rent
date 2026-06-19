@@ -3,9 +3,11 @@ import {
   transmissionFromDb,
   fuelTypeFromDb,
   vehicleStatusFromDb,
+  bookingStatusFromDb,
   type VehicleDTO,
   type VehicleCategoryDTO,
   type BranchDTO,
+  type BookingDTO,
 } from '@car-rental/types';
 
 type PrismaVehicle = {
@@ -95,5 +97,43 @@ export function branchToDTO(b: PrismaBranch): BranchDTO {
   if (b.phone !== null) dto.phone = b.phone;
   if (b.lat !== null) dto.lat = b.lat;
   if (b.lng !== null) dto.lng = b.lng;
+  return dto;
+}
+
+type PrismaBooking = {
+  id: string;
+  status: string;
+  vehicleId: string;
+  startDate: Date;
+  endDate: Date;
+  plan: string;
+  baseAmount: { toString(): string } | number;
+  taxAmount: { toString(): string } | number;
+  serviceCharge: { toString(): string } | number;
+  totalAmount: { toString(): string } | number;
+  currency: string;
+  createdAt: Date;
+  vehicle: { id: string; name: string };
+  pickupBranch?: { name: string } | null;
+  dropoffBranch?: { name: string } | null;
+};
+
+export function bookingToDTO(b: PrismaBooking): BookingDTO {
+  const dto: BookingDTO = {
+    id: b.id,
+    status: bookingStatusFromDb(b.status),
+    vehicle: { id: b.vehicle.id, name: b.vehicle.name },
+    startDate: b.startDate.toISOString().slice(0, 10),
+    endDate: b.endDate.toISOString().slice(0, 10),
+    plan: b.plan.toLowerCase().replace(/_/g, '-') as BookingDTO['plan'],
+    baseAmount: Number(b.baseAmount),
+    taxAmount: Number(b.taxAmount),
+    serviceCharge: Number(b.serviceCharge),
+    totalAmount: Number(b.totalAmount),
+    currency: b.currency,
+    createdAt: b.createdAt.toISOString(),
+  };
+  if (b.pickupBranch) dto.pickupBranchName = b.pickupBranch.name;
+  if (b.dropoffBranch) dto.dropoffBranchName = b.dropoffBranch.name;
   return dto;
 }

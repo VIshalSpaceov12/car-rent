@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 vi.mock('@/auth/storage', () => ({ getToken: vi.fn().mockResolvedValue(null) }));
-import { login, me, listVehicles, getVehicle } from './client';
+import { login, me, listVehicles, getVehicle, quoteBooking, createBooking, listBookings } from './client';
 import { getToken } from '@/auth/storage';
 
 describe('mobile api client', () => {
@@ -85,5 +85,98 @@ describe('getVehicle()', () => {
   it('returns null on other non-ok response', async () => {
     global.fetch = vi.fn().mockResolvedValue({ ok: false, status: 500, json: async () => ({}) }) as never;
     expect(await getVehicle('v1')).toBeNull();
+  });
+});
+
+describe('quoteBooking()', () => {
+  beforeEach(() => vi.resetAllMocks());
+
+  it('POSTs request and returns quote on 200', async () => {
+    vi.mocked(getToken).mockResolvedValueOnce('tok123');
+    const mockQuote = {
+      days: 3,
+      baseRatePerDay: 50,
+      planMultiplier: 1,
+      seasonalMultiplier: 1,
+      subtotal: 150,
+      taxRatePct: 5,
+      taxAmount: 7.5,
+      serviceCharge: 10,
+      total: 167.5,
+      currency: 'USD',
+    };
+    global.fetch = vi.fn().mockResolvedValue({ ok: true, status: 200, json: async () => mockQuote }) as never;
+    const req = { vehicleId: 'v1', startDate: '2025-01-01', endDate: '2025-01-04', plan: 'daily' as const };
+    const result = await quoteBooking(req);
+    expect(result).toEqual(mockQuote);
+    expect(global.fetch).toHaveBeenCalledWith(
+      expect.stringContaining('/api/bookings/quote'),
+      expect.objectContaining({ method: 'POST', body: JSON.stringify(req) }),
+    );
+  });
+
+  it('returns null on non-ok response', async () => {
+    vi.mocked(getToken).mockResolvedValueOnce('tok123');
+    global.fetch = vi.fn().mockResolvedValue({ ok: false, status: 422, json: async () => ({}) }) as never;
+    const result = await quoteBooking({ vehicleId: 'v1', startDate: '2025-01-01', endDate: '2025-01-04', plan: 'daily' as const });
+    expect(result).toBeNull();
+  });
+});
+
+describe('createBooking()', () => {
+  beforeEach(() => vi.resetAllMocks());
+
+  it('POSTs request and returns BookingDTO on 200', async () => {
+    vi.mocked(getToken).mockResolvedValueOnce('tok123');
+    const mockBooking: import('@car-rental/types').BookingDTO = {
+      id: 'b1',
+      status: 'reserved',
+      vehicle: { id: 'v1', name: 'Toyota Camry' },
+      startDate: '2025-01-01',
+      endDate: '2025-01-04',
+      plan: 'daily',
+      baseAmount: 150,
+      taxAmount: 7.5,
+      serviceCharge: 10,
+      totalAmount: 167.5,
+      currency: 'USD',
+      createdAt: '2025-01-01T00:00:00.000Z',
+    };
+    global.fetch = vi.fn().mockResolvedValue({ ok: true, status: 200, json: async () => mockBooking }) as never;
+    const req = { vehicleId: 'v1', startDate: '2025-01-01', endDate: '2025-01-04', plan: 'daily' as const };
+    const result = await createBooking(req);
+    expect(result).toEqual(mockBooking);
+    expect(global.fetch).toHaveBeenCalledWith(
+      expect.stringContaining('/api/bookings'),
+      expect.objectContaining({ method: 'POST', body: JSON.stringify(req) }),
+    );
+  });
+
+  it('returns null on non-ok response', async () => {
+    vi.mocked(getToken).mockResolvedValueOnce('tok123');
+    global.fetch = vi.fn().mockResolvedValue({ ok: false, status: 409, json: async () => ({}) }) as never;
+    const result = await createBooking({ vehicleId: 'v1', startDate: '2025-01-01', endDate: '2025-01-04', plan: 'daily' as const });
+    expect(result).toBeNull();
+  });
+});
+
+describe('listBookings()', () => {
+  beforeEach(() => vi.resetAllMocks());
+
+  it('calls GET /api/bookings and returns array', async () => {
+    vi.mocked(getToken).mockResolvedValueOnce('tok123');
+    const mockBookings = [
+      { id: 'b1', status: 'reserved', vehicle: { id: 'v1', name: 'Camry' }, startDate: '2025-01-01', endDate: '2025-01-04', plan: 'daily', baseAmount: 150, taxAmount: 7.5, serviceCharge: 10, totalAmount: 167.5, currency: 'USD', createdAt: '2025-01-01T00:00:00.000Z' },
+    ];
+    global.fetch = vi.fn().mockResolvedValue({ ok: true, status: 200, json: async () => mockBookings }) as never;
+    const result = await listBookings();
+    expect(result).toEqual(mockBookings);
+    expect(global.fetch).toHaveBeenCalledWith(expect.stringContaining('/api/bookings'), expect.any(Object));
+  });
+
+  it('returns empty array on non-ok response', async () => {
+    vi.mocked(getToken).mockResolvedValueOnce('tok123');
+    global.fetch = vi.fn().mockResolvedValue({ ok: false, status: 401, json: async () => ({}) }) as never;
+    expect(await listBookings()).toEqual([]);
   });
 });

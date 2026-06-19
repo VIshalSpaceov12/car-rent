@@ -37,6 +37,24 @@ enum VehicleStatus {
   RETIRED
 }
 
+enum BookingStatus {
+  RESERVED
+  CONFIRMED
+  VEHICLE_PREPARED
+  PICKED_UP
+  RETURNED
+  COMPLETED
+  REJECTED
+  CANCELLED
+}
+
+enum RentalPlan {
+  DAILY
+  WEEKLY
+  MONTHLY
+  LONG_TERM
+}
+
 model Provider {
   id            String   @id @default(cuid())
   name          String
@@ -53,6 +71,7 @@ model Provider {
   vehicleCategories  VehicleCategory[]
   branches           Branch[]
   vehicles           Vehicle[]
+  bookings           Booking[]
 }
 
 model VehicleCategory {
@@ -83,6 +102,8 @@ model Branch {
 
   provider Provider  @relation(fields: [providerId], references: [id], onDelete: Cascade)
   vehicles Vehicle[]
+  pickupBookings  Booking[] @relation("pickup")
+  dropoffBookings Booking[] @relation("dropoff")
 
   @@index([providerId])
 }
@@ -109,6 +130,7 @@ model Vehicle {
   provider Provider        @relation(fields: [providerId], references: [id], onDelete: Cascade)
   category VehicleCategory @relation(fields: [categoryId], references: [id])
   branch   Branch?         @relation(fields: [branchId], references: [id])
+  bookings Booking[]
 
   @@index([providerId])
   @@index([categoryId])
@@ -121,6 +143,8 @@ model BusinessSettings {
   taxRatePct         Decimal  @default(0) @db.Decimal(5, 2)
   minRentalDays      Int      @default(1)
   cancellationPolicy String   @default("")
+  planMultipliers    Json     @default("{\"daily\":1,\"weekly\":0.9,\"monthly\":0.8,\"long-term\":0.7}")
+  serviceChargePct   Decimal  @default(0) @db.Decimal(5, 2)
 
   provider Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
 }
@@ -137,7 +161,8 @@ model User {
   updatedAt    DateTime @updatedAt
 
   provider Provider? @relation(fields: [providerId], references: [id], onDelete: SetNull)
-  sessions Session[]
+  sessions  Session[]
+  bookings  Booking[]
 
   @@index([providerId])
 }
@@ -151,4 +176,34 @@ model Session {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+}
+
+model Booking {
+  id               String        @id @default(cuid())
+  providerId       String
+  customerId       String
+  vehicleId        String
+  pickupBranchId   String?
+  dropoffBranchId  String?
+  startDate        DateTime
+  endDate          DateTime
+  plan             RentalPlan
+  status           BookingStatus @default(RESERVED)
+  baseAmount       Decimal       @db.Decimal(10, 2)
+  taxAmount        Decimal       @db.Decimal(10, 2)
+  serviceCharge    Decimal       @db.Decimal(10, 2)
+  totalAmount      Decimal       @db.Decimal(10, 2)
+  currency         String
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  provider      Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  customer      User     @relation(fields: [customerId], references: [id])
+  vehicle       Vehicle  @relation(fields: [vehicleId], references: [id])
+  pickupBranch  Branch?  @relation("pickup",  fields: [pickupBranchId],  references: [id])
+  dropoffBranch Branch?  @relation("dropoff", fields: [dropoffBranchId], references: [id])
+
+  @@index([providerId])
+  @@index([customerId])
+  @@index([vehicleId])
 }

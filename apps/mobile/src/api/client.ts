@@ -1,4 +1,13 @@
-import type { LoginResponse, SessionUser, VehicleDTO, VehicleBrowseQuery } from '@car-rental/types';
+import type {
+  LoginResponse,
+  SessionUser,
+  VehicleDTO,
+  VehicleBrowseQuery,
+  BookingQuoteRequest,
+  BookingQuote,
+  BookingCreateRequest,
+  BookingDTO,
+} from '@car-rental/types';
 import { getToken } from '@/auth/storage';
 
 const BASE = process.env.EXPO_PUBLIC_API_BASE_URL ?? 'http://localhost:3000';
@@ -50,4 +59,25 @@ export async function getVehicle(id: string): Promise<VehicleDTO | null> {
   const res = await authedFetch(`/api/vehicles/${id}`);
   if (res.status === 404) return null;
   return res.ok ? ((await res.json()) as VehicleDTO) : null;
+}
+
+export async function quoteBooking(req: BookingQuoteRequest): Promise<BookingQuote | null> {
+  const res = await authedFetch('/api/bookings/quote', {
+    method: 'POST',
+    body: JSON.stringify(req),
+  });
+  return res.ok ? ((await res.json()) as BookingQuote) : null;
+}
+
+export async function createBooking(req: BookingCreateRequest): Promise<BookingDTO | null> {
+  const res = await authedFetch('/api/bookings', {
+    method: 'POST',
+    body: JSON.stringify(req),
+  });
+  return res.ok ? ((await res.json()) as BookingDTO) : null;
+}
+
+export async function listBookings(): Promise<BookingDTO[]> {
+  const res = await authedFetch('/api/bookings');
+  return res.ok ? ((await res.json()) as BookingDTO[]) : [];
 }
