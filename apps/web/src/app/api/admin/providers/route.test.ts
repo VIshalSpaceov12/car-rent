@@ -201,6 +201,26 @@ describe('POST /api/admin/providers — onboard a new provider', () => {
 // ─── PATCH /api/admin/providers/[id] ─────────────────────────────────────────
 
 describe('PATCH /api/admin/providers/[id]', () => {
+  it('rejects unauthenticated (401)', async () => {
+    mockNoAuth();
+    const providerRow = await prisma.provider.findUnique({ where: { slug: 'drivehub' } });
+    const res = await PATCH(
+      req('PATCH', `http://localhost/api/admin/providers/${providerRow!.id}`, { status: 'suspended' }),
+      { params: Promise.resolve({ id: providerRow!.id }) },
+    );
+    expect(res.status).toBe(401);
+  });
+
+  it('rejects customer (403)', async () => {
+    mockAuth(customerToken);
+    const providerRow = await prisma.provider.findUnique({ where: { slug: 'drivehub' } });
+    const res = await PATCH(
+      req('PATCH', `http://localhost/api/admin/providers/${providerRow!.id}`, { status: 'suspended' }),
+      { params: Promise.resolve({ id: providerRow!.id }) },
+    );
+    expect(res.status).toBe(403);
+  });
+
   it('rejects non-admin (403)', async () => {
     mockAuth(providerToken);
     const providerRow = await prisma.provider.findUnique({ where: { slug: 'drivehub' } });

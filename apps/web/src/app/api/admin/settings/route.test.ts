@@ -90,6 +90,12 @@ describe('Authorization — /api/admin/settings', () => {
     const res = await PATCH(req('PATCH', { platformName: 'Hacked' }));
     expect(res.status).toBe(403);
   });
+
+  it('PATCH rejects provider (403)', async () => {
+    mockAuth(providerToken);
+    const res = await PATCH(req('PATCH', { platformName: 'Hacked' }));
+    expect(res.status).toBe(403);
+  });
 });
 
 describe('GET /api/admin/settings', () => {
