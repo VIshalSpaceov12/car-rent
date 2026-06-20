@@ -24,7 +24,62 @@
   },
   "admin": {
     "title": "مشرف المنصة",
-    "soon": "الإشراف على جميع المستأجرين في المرحلة 7."
+    "soon": "الإشراف على جميع المستأجرين في المرحلة 7.",
+    "providers": {
+      "title": "مزودو الخدمة",
+      "onboard": "تسجيل مزود خدمة",
+      "noProviders": "لا يوجد مزودو خدمة بعد.",
+      "columns": {
+        "name": "الاسم",
+        "slug": "المعرف",
+        "status": "الحالة",
+        "users": "المستخدمون",
+        "vehicles": "المركبات",
+        "bookings": "الحجوزات",
+        "actions": "الإجراءات"
+      },
+      "status": {
+        "active": "نشط",
+        "suspended": "موقوف",
+        "pending": "في الانتظار"
+      },
+      "approve": "موافقة",
+      "suspend": "تعليق",
+      "form": {
+        "title": "تسجيل مزود خدمة جديد",
+        "name": "اسم المزود",
+        "slug": "المعرف",
+        "slugHint": "أحرف صغيرة وشرطات فقط",
+        "ownerName": "اسم المالك",
+        "ownerEmail": "بريد المالك الإلكتروني",
+        "ownerPassword": "كلمة مرور المالك",
+        "save": "إنشاء المزود",
+        "saving": "جارٍ الإنشاء…",
+        "cancel": "إلغاء",
+        "errorSave": "فشل الإنشاء. تحقق من المدخلات.",
+        "errorSlugTaken": "المعرف مستخدم بالفعل.",
+        "errorEmailTaken": "البريد الإلكتروني مستخدم بالفعل."
+      }
+    },
+    "analytics": {
+      "title": "تحليلات المنصة",
+      "providersTotal": "إجمالي المزودين",
+      "providersActive": "المزودون النشطون",
+      "bookingsTotal": "إجمالي الحجوزات",
+      "revenueTotal": "إجمالي الإيرادات",
+      "activeRentals": "الإيجارات النشطة",
+      "topProviders": "أفضل المزودين",
+      "bookings": "حجوزات"
+    },
+    "settings": {
+      "title": "إعدادات المنصة",
+      "platformName": "اسم المنصة",
+      "supportEmail": "بريد الدعم",
+      "defaultLocale": "اللغة الافتراضية",
+      "save": "حفظ",
+      "saving": "جارٍ الحفظ…",
+      "errorSave": "فشل الحفظ. تحقق من المدخلات."
+    }
   },
   "fleet": {
     "title": "الأسطول",
