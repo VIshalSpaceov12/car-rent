@@ -42,6 +42,11 @@ export function useBookingStream(): ReadonlyMap<string, BookingStatus> {
         }
       };
 
+      es.onopen = () => {
+        // Reset backoff delay on successful connection open
+        retryDelay.current = 1_000;
+      };
+
       es.onerror = () => {
         es.close();
         esRef.current = null;

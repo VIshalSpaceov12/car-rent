@@ -1,3 +1,4 @@
+import { BOOKING_STATUSES } from '@car-rental/types';
 import type { BookingStatus } from '@car-rental/types';
 
 export interface BookingStatusEventPayload {
@@ -21,6 +22,8 @@ export function parseBookingStatusEvent(raw: string): BookingStatusEventPayload 
       const bookingId = p['bookingId'];
       const status = p['status'];
       if (!bookingId || !status) return null;
+      // Validate status is a known BookingStatus before casting
+      if (!(BOOKING_STATUSES as readonly string[]).includes(status)) return null;
       return { bookingId, status: status as BookingStatus };
     }
     return null;

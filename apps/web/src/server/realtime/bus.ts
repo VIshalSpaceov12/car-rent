@@ -1,3 +1,4 @@
+import 'server-only';
 import { EventEmitter } from 'events';
 import type { BookingStatus } from '@car-rental/types';
 

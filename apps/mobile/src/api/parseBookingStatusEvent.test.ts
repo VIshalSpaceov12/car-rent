@@ -35,4 +35,9 @@ describe('parseBookingStatusEvent', () => {
     const raw = JSON.stringify({ bookingId: 42, status: 'reserved' });
     expect(parseBookingStatusEvent(raw)).toBeNull();
   });
+
+  it('returns null for unknown/invalid status value', () => {
+    const raw = JSON.stringify({ bookingId: 'b1', status: 'flying' });
+    expect(parseBookingStatusEvent(raw)).toBeNull();
+  });
 });

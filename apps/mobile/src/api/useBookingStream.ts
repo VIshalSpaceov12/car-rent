@@ -49,6 +49,14 @@ export function useBookingStream({ onStatusChange }: UseBookingStreamOptions): v
           headers: token ? { Authorization: `Bearer ${token}` } : {},
         });
 
+        // Guard: if the focus-effect cancelled while we awaited getToken(),
+        // close the EventSource immediately and bail out.
+        if (cancelled) {
+          es.close();
+          es = null;
+          return;
+        }
+
         es.addEventListener('message', (event) => {
           if (!event.data) return;
           const payload = parseBookingStatusEvent(event.data);
