@@ -14,7 +14,12 @@
       "categories": "الفئات",
       "branches": "الفروع",
       "bookings": "الحجوزات",
-      "payments": "المدفوعات"
+      "payments": "المدفوعات",
+      "analytics": "التحليلات",
+      "discounts": "رموز الخصم",
+      "staff": "الموظفون",
+      "customers": "العملاء",
+      "support": "الدعم"
     }
   },
   "admin": {
@@ -35,6 +40,7 @@
       "actions": "الإجراءات"
     },
     "edit": "تعديل",
+    "maintenance": "الصيانة",
     "delete": "حذف",
     "deleteConfirm": "هل تريد حذف هذه المركبة؟",
     "form": {
@@ -239,6 +245,138 @@
       "notFound": "الدفعة غير موجودة.",
       "forbidden": "ليس لديك صلاحية.",
       "notRefundable": "يمكن استرداد المدفوعات المؤكدة فقط."
+    }
+  },
+  "analytics": {
+    "title": "التحليلات",
+    "revenueTotal": "الإيرادات (الإجمالي)",
+    "revenueMTD": "الإيرادات (هذا الشهر)",
+    "bookingsCount": "إجمالي الحجوزات",
+    "activeRentals": "الإيجارات النشطة",
+    "fleetUtilization": "استخدام الأسطول",
+    "popularVehicles": "المركبات الأكثر طلباً",
+    "bookings": "حجوزات",
+    "noPopularVehicles": "لا توجد بيانات حجز بعد."
+  },
+  "discounts": {
+    "title": "رموز الخصم",
+    "addCode": "إضافة رمز",
+    "noDiscounts": "لا توجد رموز خصم بعد.",
+    "columns": {
+      "code": "الرمز",
+      "kind": "النوع",
+      "value": "القيمة",
+      "status": "الحالة",
+      "expires": "تنتهي في",
+      "actions": "الإجراءات"
+    },
+    "kind": {
+      "percent": "نسبة مئوية",
+      "fixed": "مبلغ ثابت"
+    },
+    "active": "نشط",
+    "inactive": "غير نشط",
+    "never": "لا تنتهي",
+    "activate": "تفعيل",
+    "deactivate": "تعطيل",
+    "form": {
+      "title": "رمز خصم جديد",
+      "code": "الرمز",
+      "codePlaceholder": "SUMMER20",
+      "codeHint": "أحرف كبيرة وأرقام وشرطات وشرطات سفلية",
+      "kind": "النوع",
+      "kindPercent": "نسبة مئوية (%)",
+      "kindFixed": "مبلغ ثابت",
+      "value": "القيمة",
+      "expiresAt": "تاريخ الانتهاء (اختياري)",
+      "add": "إضافة الرمز",
+      "adding": "جارٍ الإضافة…",
+      "cancel": "إلغاء",
+      "errorSave": "فشل الحفظ. تحقق من المدخلات."
+    }
+  },
+  "staff": {
+    "title": "الموظفون",
+    "addStaff": "إضافة موظف",
+    "noStaff": "لا يوجد موظفون بعد.",
+    "columns": {
+      "name": "الاسم",
+      "email": "البريد الإلكتروني",
+      "joined": "انضم في",
+      "actions": "الإجراءات"
+    },
+    "deactivate": "تعطيل",
+    "deactivateConfirm": "هل تريد تعطيل هذا الموظف؟",
+    "deactivating": "جارٍ التعطيل…",
+    "form": {
+      "title": "إضافة موظف",
+      "name": "الاسم",
+      "email": "البريد الإلكتروني",
+      "add": "إنشاء حساب",
+      "adding": "جارٍ الإنشاء…",
+      "cancel": "إلغاء",
+      "errorSave": "فشل الإنشاء. تحقق من المدخلات.",
+      "errorEmailTaken": "البريد الإلكتروني مستخدم بالفعل.",
+      "tempPassword": "كلمة المرور المؤقتة",
+      "tempPasswordHint": "شارك كلمة المرور هذه بأمان — لن تُعرض مرة أخرى.",
+      "done": "تم"
+    }
+  },
+  "customers": {
+    "title": "العملاء",
+    "noCustomers": "لا يوجد عملاء بعد.",
+    "columns": {
+      "name": "الاسم",
+      "email": "البريد الإلكتروني",
+      "bookings": "الحجوزات",
+      "joined": "انضم في"
+    }
+  },
+  "support": {
+    "title": "تذاكر الدعم",
+    "noTickets": "لا توجد تذاكر دعم بعد.",
+    "backToList": "→ العودة إلى التذاكر",
+    "columns": {
+      "subject": "الموضوع",
+      "customer": "العميل",
+      "status": "الحالة",
+      "date": "التاريخ",
+      "actions": "الإجراءات"
+    },
+    "status": {
+      "open": "مفتوح",
+      "resolved": "محلول"
+    },
+    "view": "عرض",
+    "ticketDetail": "تفاصيل التذكرة",
+    "subject": "الموضوع",
+    "message": "الرسالة",
+    "response": "الرد",
+    "responsePlaceholder": "اكتب ردك…",
+    "resolve": "حل",
+    "resolving": "جارٍ الحل…",
+    "alreadyResolved": "تم حل هذه التذكرة.",
+    "errorSave": "فشل حفظ الرد."
+  },
+  "maintenance": {
+    "title": "سجلات الصيانة",
+    "noRecords": "لا توجد سجلات صيانة بعد.",
+    "addRecord": "إضافة سجل",
+    "columns": {
+      "date": "التاريخ",
+      "description": "الوصف",
+      "cost": "التكلفة"
+    },
+    "form": {
+      "title": "إضافة سجل صيانة",
+      "date": "التاريخ",
+      "description": "الوصف",
+      "descriptionPlaceholder": "تغيير الزيت، تدوير الإطارات…",
+      "cost": "التكلفة (اختياري)",
+      "add": "إضافة سجل",
+      "adding": "جارٍ الإضافة…",
+      "cancel": "إلغاء",
+      "errorSave": "فشل الحفظ. تحقق من المدخلات."
     }
   },
   "branches": {

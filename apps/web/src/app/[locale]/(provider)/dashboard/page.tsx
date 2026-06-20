@@ -55,6 +55,36 @@ export default async function DashboardPage({
         >
           <span className="text-lg font-semibold text-cr-text">{t('nav.payments')}</span>
         </Link>
+        <Link
+          href={`/${locale}/dashboard/analytics`}
+          className="flex flex-col gap-cr-sm rounded-cr-card border border-cr-border bg-cr-surface p-cr-lg min-w-[160px] hover:bg-cr-surface-alt transition"
+        >
+          <span className="text-lg font-semibold text-cr-text">{t('nav.analytics')}</span>
+        </Link>
+        <Link
+          href={`/${locale}/dashboard/discounts`}
+          className="flex flex-col gap-cr-sm rounded-cr-card border border-cr-border bg-cr-surface p-cr-lg min-w-[160px] hover:bg-cr-surface-alt transition"
+        >
+          <span className="text-lg font-semibold text-cr-text">{t('nav.discounts')}</span>
+        </Link>
+        <Link
+          href={`/${locale}/dashboard/staff`}
+          className="flex flex-col gap-cr-sm rounded-cr-card border border-cr-border bg-cr-surface p-cr-lg min-w-[160px] hover:bg-cr-surface-alt transition"
+        >
+          <span className="text-lg font-semibold text-cr-text">{t('nav.staff')}</span>
+        </Link>
+        <Link
+          href={`/${locale}/dashboard/customers`}
+          className="flex flex-col gap-cr-sm rounded-cr-card border border-cr-border bg-cr-surface p-cr-lg min-w-[160px] hover:bg-cr-surface-alt transition"
+        >
+          <span className="text-lg font-semibold text-cr-text">{t('nav.customers')}</span>
+        </Link>
+        <Link
+          href={`/${locale}/dashboard/support`}
+          className="flex flex-col gap-cr-sm rounded-cr-card border border-cr-border bg-cr-surface p-cr-lg min-w-[160px] hover:bg-cr-surface-alt transition"
+        >
+          <span className="text-lg font-semibold text-cr-text">{t('nav.support')}</span>
+        </Link>
       </nav>
     </main>
   );

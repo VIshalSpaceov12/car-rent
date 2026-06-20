@@ -34,9 +34,10 @@ type BookingCardProps = {
   onPay?: (booking: BookingDTO) => void;
   onPickup?: (booking: BookingDTO) => void;
   onReturn?: (booking: BookingDTO) => void;
+  onViewReceipt?: (booking: BookingDTO) => void;
 };
 
-function BookingCard({ item, theme, onPay, onPickup, onReturn }: BookingCardProps) {
+function BookingCard({ item, theme, onPay, onPickup, onReturn, onViewReceipt }: BookingCardProps) {
   const { bg, fg } = statusStyle(item.status, theme);
   const currency = item.currency;
   const isRtl = i18n.locale === 'ar';
@@ -49,6 +50,8 @@ function BookingCard({ item, theme, onPay, onPickup, onReturn }: BookingCardProp
   const canPay = item.status === 'reserved' && !item.payment;
   const canPickup = item.status === 'vehicle-prepared';
   const canReturn = item.status === 'picked-up';
+  const canViewReceipt =
+    item.status === 'completed' || item.status === 'returned' || item.status === 'cancelled';
 
   return (
     <View
@@ -197,6 +200,36 @@ function BookingCard({ item, theme, onPay, onPickup, onReturn }: BookingCardProp
           </Text>
         </Pressable>
       )}
+
+      {/* Receipt / Re-book button — completed/returned/cancelled */}
+      {canViewReceipt && onViewReceipt && (
+        <Pressable
+          style={[
+            styles.payButton,
+            {
+              backgroundColor: theme.color.surface,
+              borderRadius: theme.radius.input,
+              marginTop: theme.spacing.sm,
+              borderWidth: 1,
+              borderColor: theme.color.border,
+            },
+          ]}
+          onPress={() => onViewReceipt(item)}
+          accessibilityRole="button"
+          accessibilityLabel={i18n.t('receipt.title')}
+        >
+          <Text
+            style={{
+              color: theme.color.text,
+              fontSize: theme.typography.caption.fontSize,
+              fontWeight: '700',
+              textAlign: 'center',
+            }}
+          >
+            {i18n.t('receipt.title')}
+          </Text>
+        </Pressable>
+      )}
     </View>
   );
 }
@@ -206,9 +239,11 @@ type Props = {
   onPayBooking?: (booking: BookingDTO) => void;
   /** If provided, "Pick Up" button appears on vehicle-prepared bookings */
   onPickup?: (booking: BookingDTO) => void;
+  /** If provided, "Receipt" button appears on completed/returned/cancelled bookings */
+  onViewReceipt?: (booking: BookingDTO) => void;
 };
 
-export function BookingsScreen({ onPayBooking, onPickup }: Props = {}) {
+export function BookingsScreen({ onPayBooking, onPickup, onViewReceipt }: Props = {}) {
   const theme = useTheme();
   const [bookings, setBookings] = useState<BookingDTO[]>([]);
   const [loading, setLoading] = useState(true);
@@ -305,6 +340,7 @@ export function BookingsScreen({ onPayBooking, onPickup }: Props = {}) {
               onPay={onPayBooking}
               onPickup={onPickup}
               onReturn={handleReturn}
+              onViewReceipt={onViewReceipt}
             />
           )}
           contentContainerStyle={{ padding: theme.spacing.md, paddingBottom: 120 }}

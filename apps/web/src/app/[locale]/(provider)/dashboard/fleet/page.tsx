@@ -86,6 +86,12 @@ export default async function FleetPage({
                       >
                         {t('edit')}
                       </Link>
+                      <Link
+                        href={`/${locale}/dashboard/fleet/${v.id}`}
+                        className="text-cr-text-muted text-sm font-semibold hover:underline"
+                      >
+                        {t('maintenance')}
+                      </Link>
                       <DeleteVehicleButton locale={locale} id={v.id} />
                     </div>
                   </td>

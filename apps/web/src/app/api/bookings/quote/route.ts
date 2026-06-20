@@ -3,18 +3,23 @@ import { prisma } from '@/server/db';
 import { verifySession } from '@/server/auth/dal';
 import { bookingQuoteRequestSchema } from '@car-rental/types';
 import { computeQuote, PricingError } from '@/server/modules/bookings/pricing';
+import { z } from 'zod';
+
+const quoteWithDiscountSchema = bookingQuoteRequestSchema.extend({
+  discountCode: z.string().optional(),
+});
 
 export async function POST(req: Request) {
   const user = await verifySession();
   if (!user) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
 
   const body = await req.json().catch(() => null);
-  const parsed = bookingQuoteRequestSchema.safeParse(body);
+  const parsed = quoteWithDiscountSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json({ error: 'invalid_request', issues: parsed.error.issues }, { status: 400 });
   }
 
-  const { vehicleId, startDate, endDate, plan } = parsed.data;
+  const { vehicleId, startDate, endDate, plan, discountCode } = parsed.data;
 
   const vehicle = await prisma.vehicle.findUnique({
     where: { id: vehicleId },
@@ -38,6 +43,52 @@ export async function POST(req: Request) {
       startDate: new Date(startDate),
       endDate: new Date(endDate),
     });
+
+    // Apply discount code if provided
+    if (discountCode) {
+      const discount = await prisma.discountCode.findFirst({
+        where: {
+          code: discountCode,
+          providerId: vehicle.providerId,
+          active: true,
+        },
+      });
+
+      if (!discount || (discount.expiresAt && discount.expiresAt < new Date())) {
+        // Invalid / expired / foreign code — return base quote without discount
+        return NextResponse.json({ ...quote, discountApplied: false });
+      }
+
+      // Apply discount to subtotal (in cents to avoid drift)
+      const subtotalCents = Math.round(quote.subtotal * 100);
+      let discountCents: number;
+
+      if (discount.kind === 'PERCENT') {
+        discountCents = Math.round(subtotalCents * Number(discount.value) / 100);
+      } else {
+        // FIXED
+        discountCents = Math.round(Number(discount.value) * 100);
+      }
+
+      // Cap discount to not exceed subtotal
+      discountCents = Math.min(discountCents, subtotalCents);
+      const discountedSubtotalCents = subtotalCents - discountCents;
+      const serviceChargeCents = Math.round(quote.serviceCharge * 100);
+      const taxAmountCents = Math.round((discountedSubtotalCents + serviceChargeCents) * (quote.taxRatePct / 100));
+      const totalCents = discountedSubtotalCents + serviceChargeCents + taxAmountCents;
+
+      return NextResponse.json({
+        ...quote,
+        subtotal: discountedSubtotalCents / 100,
+        taxAmount: taxAmountCents / 100,
+        total: totalCents / 100,
+        discountApplied: true,
+        discountCode: discount.code,
+        discountKind: discount.kind.toLowerCase(),
+        discountValue: Number(discount.value),
+        discountAmount: discountCents / 100,
+      });
+    }
 
     return NextResponse.json(quote);
   } catch (err) {

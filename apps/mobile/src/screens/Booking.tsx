@@ -56,6 +56,9 @@ export function BookingScreen({ vehicleId, vehicleName, pricePerDay, onBookingCr
   const [quoteLoading, setQuoteLoading] = useState(false);
   const [quoteError, setQuoteError] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [promoCode, setPromoCode] = useState('');
+  const [appliedCode, setAppliedCode] = useState<string | undefined>(undefined);
+  const [promoError, setPromoError] = useState(false);
 
   const currency = quote?.currency ?? 'USD';
 
@@ -65,13 +68,13 @@ export function BookingScreen({ vehicleId, vehicleName, pricePerDay, onBookingCr
     [currency],
   );
 
-  const fetchQuote = useCallback(async () => {
+  const fetchQuote = useCallback(async (discountCode?: string) => {
     if (!isValidDate(startDate) || !isValidDate(endDate)) return;
     if (startDate >= endDate) return;
     setQuoteLoading(true);
     setQuoteError(false);
     setQuote(null);
-    const result = await quoteBooking({ vehicleId, startDate, endDate, plan });
+    const result = await quoteBooking({ vehicleId, startDate, endDate, plan }, discountCode);
     setQuoteLoading(false);
     if (result) {
       setQuote(result);
@@ -81,20 +84,47 @@ export function BookingScreen({ vehicleId, vehicleName, pricePerDay, onBookingCr
   }, [vehicleId, startDate, endDate, plan]);
 
   useEffect(() => {
-    void fetchQuote();
+    void fetchQuote(appliedCode);
+  }, [vehicleId, startDate, endDate, plan]); // appliedCode intentionally omitted — only re-run on vehicle/date/plan changes
+
+  const handleApplyPromo = useCallback(async () => {
+    const code = promoCode.trim().toUpperCase();
+    if (!code) return;
+    setPromoError(false);
+    setQuoteLoading(true);
+    setQuote(null);
+    const result = await quoteBooking({ vehicleId, startDate, endDate, plan }, code);
+    setQuoteLoading(false);
+    if (result && result.discountApplied !== false) {
+      setAppliedCode(code);
+      setQuote(result);
+      setPromoError(false);
+    } else {
+      setPromoError(true);
+      setAppliedCode(undefined);
+      // re-fetch without code (result may be a valid 200 but code was rejected)
+      void fetchQuote(undefined);
+    }
+  }, [promoCode, vehicleId, startDate, endDate, plan, fetchQuote]);
+
+  const handleRemovePromo = useCallback(() => {
+    setAppliedCode(undefined);
+    setPromoCode('');
+    setPromoError(false);
+    void fetchQuote(undefined);
   }, [fetchQuote]);
 
   const handleConfirm = useCallback(async () => {
     if (!quote) return;
     setSubmitting(true);
-    const booking = await createBooking({ vehicleId, startDate, endDate, plan });
+    const booking = await createBooking({ vehicleId, startDate, endDate, plan }, appliedCode);
     setSubmitting(false);
     if (booking) {
       onBookingCreated?.(booking.id, booking);
     } else {
       Alert.alert(i18n.t('booking.error'));
     }
-  }, [quote, vehicleId, startDate, endDate, plan, onBookingCreated]);
+  }, [quote, vehicleId, startDate, endDate, plan, appliedCode, onBookingCreated]);
 
   const isRtl = i18n.locale === 'ar';
 
@@ -286,6 +316,74 @@ export function BookingScreen({ vehicleId, vehicleName, pricePerDay, onBookingCr
         )}
       </View>
 
+      {/* Promo code */}
+      <SectionLabel label={i18n.t('discount.promoLabel')} theme={theme} isRtl={isRtl} />
+      {appliedCode ? (
+        <View
+          style={[
+            styles.promoApplied,
+            {
+              backgroundColor: theme.color.surface,
+              borderColor: theme.color.success,
+              borderRadius: theme.radius.input,
+              paddingHorizontal: 14,
+              paddingVertical: 10,
+              marginBottom: theme.spacing.sm,
+            },
+          ]}
+        >
+          <Text style={{ color: theme.color.success, fontWeight: '700', flex: 1, textAlign: isRtl ? 'right' : 'left' }}>
+            {i18n.t('discount.applied')}: {appliedCode}
+          </Text>
+          <Pressable onPress={handleRemovePromo} accessibilityRole="button">
+            <Text style={{ color: theme.color.danger, fontWeight: '600', fontSize: theme.typography.caption.fontSize }}>
+              {i18n.t('discount.remove')}
+            </Text>
+          </Pressable>
+        </View>
+      ) : (
+        <View style={[styles.promoRow, { gap: theme.spacing.sm, marginBottom: theme.spacing.sm }]}>
+          <TextInput
+            style={[
+              styles.promoInput,
+              {
+                borderColor: promoError ? theme.color.danger : theme.color.border,
+                borderRadius: theme.radius.input,
+                color: theme.color.text,
+                backgroundColor: theme.color.surface,
+                textAlign: isRtl ? 'right' : 'left',
+              },
+            ]}
+            value={promoCode}
+            onChangeText={(v) => { setPromoCode(v); setPromoError(false); }}
+            placeholder={i18n.t('discount.promoPlaceholder')}
+            placeholderTextColor={theme.color.textMuted}
+            autoCapitalize="characters"
+            accessibilityLabel={i18n.t('discount.promoLabel')}
+          />
+          <Pressable
+            onPress={() => void handleApplyPromo()}
+            style={[
+              styles.applyBtn,
+              {
+                backgroundColor: theme.color.primary,
+                borderRadius: theme.radius.input,
+              },
+            ]}
+            accessibilityRole="button"
+          >
+            <Text style={{ color: theme.color.onPrimary, fontWeight: '700', fontSize: theme.typography.caption.fontSize }}>
+              {i18n.t('discount.apply')}
+            </Text>
+          </Pressable>
+        </View>
+      )}
+      {promoError && (
+        <Text style={{ color: theme.color.danger, fontSize: theme.typography.caption.fontSize, marginBottom: theme.spacing.sm }}>
+          {i18n.t('discount.errorInvalid')}
+        </Text>
+      )}
+
       {/* Confirm button */}
       <Pressable
         style={[
@@ -401,6 +499,28 @@ const styles = StyleSheet.create({
   },
   confirmButton: {
     paddingVertical: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  promoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  promoInput: {
+    flex: 1,
+    borderWidth: 1,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    fontSize: 15,
+  },
+  promoApplied: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+  },
+  applyBtn: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     alignItems: 'center',
     justifyContent: 'center',
   },

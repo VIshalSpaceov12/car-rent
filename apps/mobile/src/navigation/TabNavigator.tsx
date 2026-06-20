@@ -2,7 +2,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { HomeStack } from './HomeStack';
 import { BookingsStack } from './BookingsStack';
 import { PickupScreen } from '@/screens/Pickup';
-import { SettingsScreen } from '@/screens/Settings';
+import { ProfileStack } from './ProfileStack';
 import { FloatingTabBar } from './FloatingTabBar';
 import { i18n } from '@/i18n';
 
@@ -10,7 +10,7 @@ type TabParamList = {
   Home: undefined;
   Bookings: undefined;
   Pickup: undefined;
-  Settings: { onSignOut: () => void };
+  Profile: { onSignOut: () => void };
 };
 
 const Tab = createBottomTabNavigator<TabParamList>();
@@ -39,10 +39,10 @@ export function TabNavigator({ onSignOut }: Props) {
         options={{ title: i18n.t('pickup') }}
       />
       <Tab.Screen
-        name="Settings"
+        name="Profile"
         options={{ title: i18n.t('settings') }}
       >
-        {() => <SettingsScreen onSignOut={onSignOut} />}
+        {() => <ProfileStack onSignOut={onSignOut} />}
       </Tab.Screen>
     </Tab.Navigator>
   );
