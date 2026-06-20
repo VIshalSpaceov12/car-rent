@@ -1,5 +1,3 @@
-'use client';
-
 import { useState, useEffect, type ReactNode } from 'react';
 import { ThemeProvider as TokensProvider, lightTheme, createTheme } from '@car-rental/tokens';
 import type { Theme } from '@car-rental/tokens';

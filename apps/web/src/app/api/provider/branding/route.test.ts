@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeAll, afterAll } from 'vitest';
+import { describe, it, expect, vi, beforeAll, afterAll, afterEach } from 'vitest';
 import { prisma } from '@/server/db';
 import { signJwt } from '@/server/auth/jwt';
 
@@ -66,6 +66,18 @@ beforeAll(async () => {
   staffToken = signJwt(staffUser.id);
 });
 
+afterEach(async () => {
+  // Always restore drivehub seed colors so other test files see a clean state,
+  // even if the mutating test fails mid-way.
+  const drivehub = await prisma.provider.findUnique({ where: { slug: 'drivehub' } });
+  if (drivehub) {
+    await prisma.provider.update({
+      where: { id: drivehub.id },
+      data: { colors: { primary: '#F97316', primaryDark: '#EA580C' } },
+    });
+  }
+});
+
 afterAll(async () => {
   await prisma.$disconnect();
 });
@@ -122,15 +134,7 @@ describe('PATCH /api/provider/branding', () => {
     const body = await res.json() as { colors: { primary: string; primaryDark: string } };
     expect(body.colors.primary).toBe(newPrimary);
     expect(body.colors.primaryDark).toBe(newDark);
-
-    // Restore original colors
-    const mainProvider = await prisma.provider.findUnique({ where: { slug: 'drivehub' } });
-    if (mainProvider) {
-      await prisma.provider.update({
-        where: { id: mainProvider.id },
-        data: { colors: { primary: '#F97316', primaryDark: '#EA580C' } },
-      });
-    }
+    // Restore is handled by afterEach.
   });
 
   it('allows staff to update own tenant colors', async () => {
