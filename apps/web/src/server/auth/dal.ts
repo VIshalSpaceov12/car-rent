@@ -22,9 +22,18 @@ export async function verifySession(): Promise<SessionUser | null> {
   if (!userId) return null;
   const u = await prisma.user.findUnique({ where: { id: userId } });
   if (!u) return null;
+  const role = roleFromDb(u.role) as UserRole;
+  // Block suspended-tenant sessions for provider/staff; admin and customer are unaffected.
+  if ((role === 'provider' || role === 'staff') && u.providerId) {
+    const provider = await prisma.provider.findUnique({
+      where: { id: u.providerId },
+      select: { status: true },
+    });
+    if (provider?.status === 'suspended') return null;
+  }
   return {
     id: u.id, email: u.email, name: u.name,
-    role: roleFromDb(u.role) as UserRole,
+    role,
     providerId: u.providerId, locale: u.locale.toLowerCase() as Locale,
   };
 }
