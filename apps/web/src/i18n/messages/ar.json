@@ -28,6 +28,7 @@
     "soon": "الإشراف على جميع المستأجرين في المرحلة 7.",
     "providers": {
       "title": "مزودو الخدمة",
+      "backToProviders": "→ العودة إلى المزودين",
       "onboard": "تسجيل مزود خدمة",
       "noProviders": "لا يوجد مزودو خدمة بعد.",
       "columns": {
@@ -75,6 +76,7 @@
       "revenueTotal": "إجمالي الإيرادات",
       "activeRentals": "الإيجارات النشطة",
       "topProviders": "أفضل المزودين",
+      "noTopProviders": "لا توجد بيانات مزودين بعد.",
       "bookings": "حجوزات"
     },
     "settings": {
@@ -90,6 +92,7 @@
   },
   "fleet": {
     "title": "الأسطول",
+    "backToFleet": "→ العودة إلى الأسطول",
     "addVehicle": "إضافة مركبة",
     "noVehicles": "لا توجد مركبات بعد.",
     "columns": {

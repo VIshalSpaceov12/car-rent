@@ -71,7 +71,7 @@ export default async function CustomersPage({
                   <td className="px-cr-md py-cr-sm text-cr-text-muted">{c.email}</td>
                   <td className="px-cr-md py-cr-sm text-cr-text">{countMap.get(c.id) ?? 0}</td>
                   <td className="px-cr-md py-cr-sm text-cr-text-muted">
-                    {new Date(c.createdAt).toLocaleDateString()}
+                    {new Date(c.createdAt).toLocaleDateString(locale)}
                   </td>
                 </tr>
               ))}

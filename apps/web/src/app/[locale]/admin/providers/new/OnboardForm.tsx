@@ -94,7 +94,7 @@ export function OnboardForm({ locale }: Props) {
           href={`/${locale}/admin/providers`}
           className="text-sm font-semibold text-cr-primary hover:underline"
         >
-          ← {t('title')}
+          {t('backToProviders')}
         </a>
       </div>
     );

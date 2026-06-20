@@ -42,6 +42,7 @@ export default async function VehicleDetailPage({
   if (!vehicle) notFound();
 
   const tFleet = await getTranslations('fleet.form');
+  const tFleetParent = await getTranslations('fleet');
 
   const maintenanceRecords: MaintenanceRecordDTO[] = maintenanceRaw.map((r) => ({
     id: r.id,
@@ -62,7 +63,7 @@ export default async function VehicleDetailPage({
           href={`/${locale}/dashboard/fleet`}
           className="text-cr-primary text-sm font-semibold hover:underline"
         >
-          ← {tFleet('cancel')}
+          {tFleetParent('backToFleet')}
         </Link>
       </div>
 
@@ -77,7 +78,7 @@ export default async function VehicleDetailPage({
         isNew={false}
       />
 
-      <MaintenanceClient vehicleId={id} initialRecords={maintenanceRecords} />
+      <MaintenanceClient vehicleId={id} initialRecords={maintenanceRecords} locale={locale} />
     </main>
   );
 }

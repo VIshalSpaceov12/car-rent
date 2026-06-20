@@ -8,9 +8,10 @@ import type { MaintenanceRecordDTO } from '@car-rental/types';
 interface Props {
   vehicleId: string;
   initialRecords: MaintenanceRecordDTO[];
+  locale: string;
 }
 
-export function MaintenanceClient({ vehicleId, initialRecords }: Props) {
+export function MaintenanceClient({ vehicleId, initialRecords, locale }: Props) {
   const t = useTranslations('maintenance');
   const [records, setRecords] = useState<MaintenanceRecordDTO[]>(initialRecords);
   const [showForm, setShowForm] = useState(false);
@@ -137,7 +138,9 @@ export function MaintenanceClient({ vehicleId, initialRecords }: Props) {
                   <td className="px-cr-md py-cr-sm text-cr-text-muted whitespace-nowrap">{r.date}</td>
                   <td className="px-cr-md py-cr-sm text-cr-text">{r.description}</td>
                   <td className="px-cr-md py-cr-sm text-cr-text">
-                    {r.cost !== undefined ? `$${r.cost.toFixed(2)}` : '—'}
+                    {r.cost !== undefined
+                      ? new Intl.NumberFormat(locale, { style: 'currency', currency: 'USD' }).format(r.cost)
+                      : '—'}
                   </td>
                 </tr>
               ))}

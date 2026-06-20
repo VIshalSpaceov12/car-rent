@@ -53,11 +53,11 @@ export function LiveBookingsTable({ rows, locale }: LiveBookingsTableProps) {
                 <td className="px-cr-md py-cr-sm text-cr-text font-medium">{b.customerName}</td>
                 <td className="px-cr-md py-cr-sm text-cr-text-muted">{b.vehicleName}</td>
                 <td className="px-cr-md py-cr-sm text-cr-text-muted whitespace-nowrap">
-                  {b.startDate} {t('dateSeparator')} {b.endDate}
+                  {new Intl.DateTimeFormat(locale).format(new Date(b.startDate))} {t('dateSeparator')} {new Intl.DateTimeFormat(locale).format(new Date(b.endDate))}
                 </td>
                 <td className="px-cr-md py-cr-sm text-cr-text-muted">{t(`plan.${b.plan}`)}</td>
                 <td className="px-cr-md py-cr-sm text-cr-text font-medium">
-                  {b.currency} {b.totalAmount.toFixed(2)}
+                  {new Intl.NumberFormat(locale, { style: 'currency', currency: b.currency }).format(b.totalAmount)}
                 </td>
                 <td className="px-cr-md py-cr-sm">
                   <StatusChip status={liveStatus} label={t(`status.${liveStatus}`)} />

@@ -42,7 +42,7 @@ export default async function DiscountsPage({
 
   return (
     <main className="ps-cr-lg pe-cr-lg pt-cr-lg pb-cr-xl">
-      <DiscountsClient initialDiscounts={discounts} />
+      <DiscountsClient initialDiscounts={discounts} locale={locale} />
     </main>
   );
 }

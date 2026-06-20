@@ -28,6 +28,7 @@
     "soon": "All-tenant oversight lands in Phase 7.",
     "providers": {
       "title": "Providers",
+      "backToProviders": "← Back to providers",
       "onboard": "Onboard provider",
       "noProviders": "No providers yet.",
       "columns": {
@@ -75,6 +76,7 @@
       "revenueTotal": "Total revenue",
       "activeRentals": "Active rentals",
       "topProviders": "Top providers",
+      "noTopProviders": "No provider data yet.",
       "bookings": "bookings"
     },
     "settings": {
@@ -90,6 +92,7 @@
   },
   "fleet": {
     "title": "Fleet",
+    "backToFleet": "← Back to fleet",
     "addVehicle": "Add vehicle",
     "noVehicles": "No vehicles yet.",
     "columns": {

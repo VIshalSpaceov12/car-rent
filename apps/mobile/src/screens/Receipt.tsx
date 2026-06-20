@@ -92,7 +92,10 @@ export function ReceiptScreen({ booking, onRebooked, onBack }: Props) {
         ]}
       >
         {row(i18n.t('receipt.vehicle'), booking.vehicle.name)}
-        {row(i18n.t('receipt.dates'), `${booking.startDate} — ${booking.endDate}`)}
+        {row(
+          i18n.t('receipt.dates'),
+          `${new Intl.DateTimeFormat(i18n.locale).format(new Date(booking.startDate))} — ${new Intl.DateTimeFormat(i18n.locale).format(new Date(booking.endDate))}`,
+        )}
         {row(i18n.t('receipt.plan'), booking.plan)}
       </View>
 

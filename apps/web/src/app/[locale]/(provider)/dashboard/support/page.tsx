@@ -71,7 +71,7 @@ export default async function SupportPage({
                       />
                     </td>
                     <td className="px-cr-md py-cr-sm text-cr-text-muted">
-                      {new Date(ticket.createdAt).toLocaleDateString()}
+                      {new Date(ticket.createdAt).toLocaleDateString(locale)}
                     </td>
                     <td className="px-cr-md py-cr-sm">
                       <Link
