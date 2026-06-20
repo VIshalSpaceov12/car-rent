@@ -59,7 +59,6 @@ describe('listVehicles()', () => {
   it('builds query string from query params', async () => {
     global.fetch = vi.fn().mockResolvedValue({ ok: true, status: 200, json: async () => [] }) as never;
     await listVehicles({ q: 'camry', transmission: 'automatic', minPrice: 30 });
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const url = (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0]![0] as string;
     expect(url).toContain('q=camry');
     expect(url).toContain('transmission=automatic');
@@ -851,5 +850,45 @@ describe('listSupportTickets()', () => {
       expect.any(String),
       expect.objectContaining({ headers: expect.objectContaining({ authorization: 'Bearer tok-lst-tkt' }) }),
     );
+  });
+});
+
+// ---- getBranding() -------------------------------------------------------
+
+import { getBranding } from './client';
+
+describe('getBranding()', () => {
+  beforeEach(() => vi.resetAllMocks());
+
+  const mockBranding = {
+    name: 'DriveHub',
+    primary: '#F97316',
+    primaryDark: '#EA580C',
+    logoUrl: null,
+  };
+
+  it('GETs /api/branding without Authorization header and returns BrandingDTO on 200', async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true, status: 200, json: async () => mockBranding,
+    }) as never;
+
+    const result = await getBranding();
+    expect(result).toEqual(mockBranding);
+    expect(global.fetch).toHaveBeenCalledWith(
+      expect.stringContaining('/api/branding'),
+      expect.not.objectContaining({ headers: expect.objectContaining({ authorization: expect.any(String) }) }),
+    );
+  });
+
+  it('returns null on non-ok response', async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: false, status: 503, json: async () => ({}),
+    }) as never;
+    expect(await getBranding()).toBeNull();
+  });
+
+  it('returns null on network error (fetch throws)', async () => {
+    global.fetch = vi.fn().mockRejectedValue(new Error('Network error')) as never;
+    expect(await getBranding()).toBeNull();
   });
 });

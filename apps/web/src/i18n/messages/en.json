@@ -19,7 +19,8 @@
       "discounts": "Discounts",
       "staff": "Staff",
       "customers": "Customers",
-      "support": "Support"
+      "support": "Support",
+      "branding": "Brand colors"
     }
   },
   "admin": {
@@ -439,6 +440,17 @@
       "cancel": "Cancel",
       "errorSave": "Failed to save. Check your inputs."
     }
+  },
+  "branding": {
+    "title": "Brand colors",
+    "subtitle": "Customize your provider brand. Changes apply immediately on next page load.",
+    "primaryColor": "Primary color",
+    "primaryDarkColor": "Primary dark color",
+    "preview": "Preview",
+    "save": "Save",
+    "saving": "Saving…",
+    "saved": "Saved",
+    "errorSave": "Failed to save. Check your inputs."
   },
   "branches": {
     "title": "Branches",
