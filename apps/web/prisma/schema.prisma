@@ -407,3 +407,12 @@ model MaintenanceRecord {
   @@index([providerId])
   @@index([vehicleId])
 }
+
+/// Singleton row (id = "singleton") for platform-level configuration.
+model PlatformSettings {
+  id            String   @id @default("singleton")
+  platformName  String
+  supportEmail  String
+  defaultLocale Locale   @default(EN)
+  updatedAt     DateTime @updatedAt
+}

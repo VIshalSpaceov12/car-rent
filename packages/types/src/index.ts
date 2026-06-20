@@ -409,6 +409,66 @@ export interface MaintenanceRecordDTO {
   createdAt: string;
 }
 
+// ---- Admin / platform-level types ----------------------------------------
+
+export const PROVIDER_STATUSES = ['active', 'suspended', 'pending'] as const;
+export type ProviderStatus = (typeof PROVIDER_STATUSES)[number];
+
+/** DTO returned by admin list/get provider endpoints */
+export interface ProviderAdminDTO {
+  id: string;
+  name: string;
+  slug: string;
+  status: ProviderStatus;
+  defaultLocale: Locale;
+  colors: Record<string, string>;
+  createdAt: string;
+  /** Optional aggregated counts — present when the endpoint includes them */
+  counts?: {
+    users: number;
+    vehicles: number;
+    bookings: number;
+  };
+}
+
+/**
+ * Schema for onboarding a new provider (tenant) with its owner user.
+ * Admin-only action — slug uniqueness enforced at the service layer.
+ */
+export const providerOnboardSchema = z.object({
+  name: z.string().min(1).max(150),
+  slug: z.string().min(1).max(100).regex(/^[a-z0-9-]+$/, 'slug must be lowercase alphanumeric with hyphens'),
+  primaryColor: z.string().regex(/^#[0-9a-fA-F]{6}$/, 'must be a 6-digit hex color'),
+  primaryDarkColor: z.string().regex(/^#[0-9a-fA-F]{6}$/, 'must be a 6-digit hex color').optional(),
+  defaultLocale: z.enum(LOCALES).optional().default('en'),
+  ownerName: z.string().min(1).max(150),
+  ownerEmail: z.string().email(),
+  ownerPassword: z.string().min(8),
+});
+export type ProviderOnboardInput = z.infer<typeof providerOnboardSchema>;
+
+/** Schema for updating a provider's status (approve / suspend / pending). */
+export const providerStatusSchema = z.object({
+  status: z.enum(PROVIDER_STATUSES),
+});
+export type ProviderStatusInput = z.infer<typeof providerStatusSchema>;
+
+/** Schema for the singleton platform-level settings (admin-only). */
+export const platformSettingsSchema = z.object({
+  platformName: z.string().min(1).max(150),
+  supportEmail: z.string().email(),
+  defaultLocale: z.enum(LOCALES).optional().default('en'),
+});
+export type PlatformSettingsInput = z.infer<typeof platformSettingsSchema>;
+
+/** DTO for platform settings */
+export interface PlatformSettingsDTO {
+  platformName: string;
+  supportEmail: string;
+  defaultLocale: Locale;
+  updatedAt: string;
+}
+
 // ---- Booking lifecycle transition map ------------------------------------
 // Maps current status -> list of { next, allowedRoles }
 // provider/staff drive operational transitions; customer can only cancel from early states
