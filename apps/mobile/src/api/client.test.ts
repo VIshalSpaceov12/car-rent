@@ -705,13 +705,13 @@ describe('createAddress()', () => {
   it('returns null on non-ok response', async () => {
     vi.mocked(getToken).mockResolvedValueOnce('tok123');
     global.fetch = vi.fn().mockResolvedValue({ ok: false, status: 422, json: async () => ({}) }) as never;
-    expect(await createAddress({ label: 'Work', line1: '1 Ave', city: 'Dubai', country: 'AE' })).toBeNull();
+    expect(await createAddress({ label: 'Work', line1: '1 Ave', city: 'Dubai', country: 'AE', isDefault: false })).toBeNull();
   });
 
   it('sends Authorization header', async () => {
     vi.mocked(getToken).mockResolvedValueOnce('tok-create-addr');
     global.fetch = vi.fn().mockResolvedValue({ ok: true, status: 200, json: async () => mockAddress }) as never;
-    await createAddress({ label: 'Home', line1: '1 St', city: 'Dubai', country: 'AE' });
+    await createAddress({ label: 'Home', line1: '1 St', city: 'Dubai', country: 'AE', isDefault: false });
     expect(global.fetch).toHaveBeenCalledWith(
       expect.any(String),
       expect.objectContaining({ headers: expect.objectContaining({ authorization: 'Bearer tok-create-addr' }) }),

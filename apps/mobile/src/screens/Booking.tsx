@@ -85,8 +85,7 @@ export function BookingScreen({ vehicleId, vehicleName, pricePerDay, onBookingCr
 
   useEffect(() => {
     void fetchQuote(appliedCode);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [vehicleId, startDate, endDate, plan]);
+  }, [vehicleId, startDate, endDate, plan]); // appliedCode intentionally omitted — only re-run on vehicle/date/plan changes
 
   const handleApplyPromo = useCallback(async () => {
     const code = promoCode.trim().toUpperCase();
