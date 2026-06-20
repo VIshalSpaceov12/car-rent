@@ -16,6 +16,7 @@ vi.mock('next/navigation', () => ({
 vi.mock('@/server/db', () => ({
   prisma: {
     user: { findUnique: vi.fn() },
+    provider: { findUnique: vi.fn() },
     booking: {
       findFirst: vi.fn(),
       update: vi.fn(),
@@ -48,6 +49,7 @@ function mockProviderAuth(user: {
     get: () => undefined,
   } as never);
   vi.mocked(prisma.user.findUnique).mockResolvedValue(user as never);
+  vi.mocked(prisma.provider.findUnique).mockResolvedValue({ status: 'active' } as never);
 }
 
 const PROVIDER_USER = {

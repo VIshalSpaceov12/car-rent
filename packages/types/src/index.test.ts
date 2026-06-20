@@ -18,6 +18,8 @@ import {
   discountKindToDb, discountKindFromDb,
   addressCreateSchema, supportTicketCreateSchema,
   discountCreateSchema, maintenanceCreateSchema,
+  PROVIDER_STATUSES,
+  providerOnboardSchema, providerStatusSchema, platformSettingsSchema,
 } from './index';
 
 describe('@car-rental/types', () => {
@@ -357,5 +359,96 @@ describe('@car-rental/types', () => {
       date: '01/06/2026',
     });
     expect(result.success).toBe(false);
+  });
+
+  // ---- Admin / platform types ---------------------------------------------
+  it('PROVIDER_STATUSES contains active, suspended, pending', () => {
+    expect(PROVIDER_STATUSES).toEqual(['active', 'suspended', 'pending']);
+  });
+
+  it('providerOnboardSchema: accepts a valid onboard payload', () => {
+    const result = providerOnboardSchema.safeParse({
+      name: 'Sunset Rentals',
+      slug: 'sunset-rentals',
+      primaryColor: '#F97316',
+      defaultLocale: 'en',
+      ownerName: 'Alice Owner',
+      ownerEmail: 'alice@sunset.test',
+      ownerPassword: 'Password123!',
+    });
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data.defaultLocale).toBe('en');
+  });
+
+  it('providerOnboardSchema: rejects slug with uppercase', () => {
+    const result = providerOnboardSchema.safeParse({
+      name: 'Bad Slug Co',
+      slug: 'BadSlug',
+      primaryColor: '#F97316',
+      ownerName: 'Bob',
+      ownerEmail: 'bob@bad.test',
+      ownerPassword: 'Password123!',
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it('providerOnboardSchema: rejects short password', () => {
+    const result = providerOnboardSchema.safeParse({
+      name: 'Good Co',
+      slug: 'good-co',
+      primaryColor: '#F97316',
+      ownerName: 'Carol',
+      ownerEmail: 'carol@good.test',
+      ownerPassword: 'short',
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it('providerOnboardSchema: rejects invalid hex color', () => {
+    const result = providerOnboardSchema.safeParse({
+      name: 'Good Co',
+      slug: 'good-co',
+      primaryColor: 'orange',
+      ownerName: 'Dave',
+      ownerEmail: 'dave@good.test',
+      ownerPassword: 'Password123!',
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it('providerStatusSchema: accepts active/suspended/pending', () => {
+    expect(providerStatusSchema.safeParse({ status: 'active' }).success).toBe(true);
+    expect(providerStatusSchema.safeParse({ status: 'suspended' }).success).toBe(true);
+    expect(providerStatusSchema.safeParse({ status: 'pending' }).success).toBe(true);
+  });
+
+  it('providerStatusSchema: rejects unknown status', () => {
+    expect(providerStatusSchema.safeParse({ status: 'deleted' }).success).toBe(false);
+  });
+
+  it('platformSettingsSchema: accepts valid settings', () => {
+    const result = platformSettingsSchema.safeParse({
+      platformName: 'DriveHub Platform',
+      supportEmail: 'support@platform.test',
+      defaultLocale: 'en',
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it('platformSettingsSchema: rejects invalid email', () => {
+    const result = platformSettingsSchema.safeParse({
+      platformName: 'DriveHub Platform',
+      supportEmail: 'not-an-email',
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it('platformSettingsSchema: defaults defaultLocale to en', () => {
+    const result = platformSettingsSchema.safeParse({
+      platformName: 'MyPlatform',
+      supportEmail: 'help@myplatform.test',
+    });
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data.defaultLocale).toBe('en');
   });
 });

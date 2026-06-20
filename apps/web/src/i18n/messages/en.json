@@ -24,7 +24,68 @@
   },
   "admin": {
     "title": "Platform admin",
-    "soon": "All-tenant oversight lands in Phase 7."
+    "soon": "All-tenant oversight lands in Phase 7.",
+    "providers": {
+      "title": "Providers",
+      "onboard": "Onboard provider",
+      "noProviders": "No providers yet.",
+      "columns": {
+        "name": "Name",
+        "slug": "Slug",
+        "status": "Status",
+        "users": "Users",
+        "vehicles": "Vehicles",
+        "bookings": "Bookings",
+        "actions": "Actions"
+      },
+      "status": {
+        "active": "Active",
+        "suspended": "Suspended",
+        "pending": "Pending"
+      },
+      "approve": "Approve",
+      "suspend": "Suspend",
+      "form": {
+        "title": "Onboard new provider",
+        "name": "Provider name",
+        "slug": "Slug",
+        "slugHint": "Lowercase, hyphens only",
+        "ownerName": "Owner name",
+        "ownerEmail": "Owner email",
+        "ownerPassword": "Owner password",
+        "save": "Create provider",
+        "saving": "Creating…",
+        "cancel": "Cancel",
+        "errorSave": "Failed to create. Check your inputs.",
+        "errorSlugTaken": "Slug is already taken.",
+        "errorEmailTaken": "Email is already in use.",
+        "primaryColor": "Primary color",
+        "primaryDarkColor": "Primary dark color",
+        "defaultLocale": "Default locale",
+        "createdSlug": "Slug",
+        "createdStatus": "Status"
+      }
+    },
+    "analytics": {
+      "title": "Platform analytics",
+      "providersTotal": "Total providers",
+      "providersActive": "Active providers",
+      "bookingsTotal": "Total bookings",
+      "revenueTotal": "Total revenue",
+      "activeRentals": "Active rentals",
+      "topProviders": "Top providers",
+      "bookings": "bookings"
+    },
+    "settings": {
+      "title": "Platform settings",
+      "platformName": "Platform name",
+      "supportEmail": "Support email",
+      "defaultLocale": "Default locale",
+      "save": "Save",
+      "saving": "Saving…",
+      "errorSave": "Failed to save. Check your inputs.",
+      "saved": "Saved"
+    }
   },
   "fleet": {
     "title": "Fleet",

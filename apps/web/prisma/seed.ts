@@ -324,6 +324,31 @@ async function main() {
     });
   }
 
-  console.log('Seeded provider DriveHub + 4 users + 3 categories + 2 branches + 5 vehicles + 2 bookings + 1 payment + engagement data (password:', PASS, ')');
+  // ---- PlatformSettings (singleton) ----------------------------------------
+  await prisma.platformSettings.upsert({
+    where: { id: 'singleton' },
+    update: { platformName: 'DriveHub Platform', supportEmail: 'support@platform.test' },
+    create: {
+      id: 'singleton',
+      platformName: 'DriveHub Platform',
+      supportEmail: 'support@platform.test',
+      defaultLocale: 'EN',
+    },
+  });
+
+  // ---- Second demo provider (pending — for admin onboarding demo) -----------
+  await prisma.provider.upsert({
+    where: { slug: 'sunset-rentals' },
+    update: {},
+    create: {
+      name: 'Sunset Rentals',
+      slug: 'sunset-rentals',
+      colors: { primary: '#0EA5A4', primaryDark: '#0D8F8E' },
+      defaultLocale: 'EN',
+      status: 'pending',
+    },
+  });
+
+  console.log('Seeded provider DriveHub + 4 users + 3 categories + 2 branches + 5 vehicles + 2 bookings + 1 payment + engagement data + PlatformSettings + Sunset Rentals (pending) (password:', PASS, ')');
 }
 main().finally(() => prisma.$disconnect());
