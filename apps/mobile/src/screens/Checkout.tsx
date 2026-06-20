@@ -114,7 +114,7 @@ export function CheckoutScreen({ booking, onPaymentSuccess, onCancel }: Props) {
             textAlign: isRtl ? 'right' : 'left',
           }}
         >
-          {booking.startDate} — {booking.endDate}
+          {new Intl.DateTimeFormat(i18n.locale).format(new Date(booking.startDate))} — {new Intl.DateTimeFormat(i18n.locale).format(new Date(booking.endDate))}
         </Text>
         <Text
           style={{

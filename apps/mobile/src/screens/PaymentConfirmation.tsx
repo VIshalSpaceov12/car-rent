@@ -87,7 +87,7 @@ export function PaymentConfirmationScreen({ booking, onDone }: Props) {
             marginBottom: theme.spacing.xs,
           }}
         >
-          {booking.startDate} — {booking.endDate}
+          {new Intl.DateTimeFormat(i18n.locale).format(new Date(booking.startDate))} — {new Intl.DateTimeFormat(i18n.locale).format(new Date(booking.endDate))}
         </Text>
         <Text
           style={{
