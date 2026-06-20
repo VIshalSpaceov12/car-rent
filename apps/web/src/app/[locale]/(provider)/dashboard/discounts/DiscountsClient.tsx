@@ -8,9 +8,10 @@ import type { DiscountCodeDTO } from '@car-rental/types';
 
 interface Props {
   initialDiscounts: DiscountCodeDTO[];
+  locale: string;
 }
 
-export function DiscountsClient({ initialDiscounts }: Props) {
+export function DiscountsClient({ initialDiscounts, locale }: Props) {
   const t = useTranslations('discounts');
   const [discounts, setDiscounts] = useState<DiscountCodeDTO[]>(initialDiscounts);
   const [showForm, setShowForm] = useState(false);
@@ -182,7 +183,9 @@ export function DiscountsClient({ initialDiscounts }: Props) {
                   <td className="px-cr-md py-cr-sm font-mono font-semibold text-cr-text">{d.code}</td>
                   <td className="px-cr-md py-cr-sm text-cr-text-muted">{t(`kind.${d.kind}`)}</td>
                   <td className="px-cr-md py-cr-sm text-cr-text">
-                    {d.kind === 'percent' ? `${d.value}%` : `$${d.value}`}
+                    {d.kind === 'percent'
+                      ? `${d.value}%`
+                      : new Intl.NumberFormat(locale, { style: 'currency', currency: 'USD' }).format(d.value)}
                   </td>
                   <td className="px-cr-md py-cr-sm">
                     <StatusChip
@@ -191,7 +194,7 @@ export function DiscountsClient({ initialDiscounts }: Props) {
                     />
                   </td>
                   <td className="px-cr-md py-cr-sm text-cr-text-muted">
-                    {d.expiresAt ? new Date(d.expiresAt).toLocaleDateString() : t('never')}
+                    {d.expiresAt ? new Date(d.expiresAt).toLocaleDateString(locale) : t('never')}
                   </td>
                   <td className="px-cr-md py-cr-sm">
                     <button

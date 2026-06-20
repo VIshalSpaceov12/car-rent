@@ -101,7 +101,7 @@ function BookingCard({ item, theme, onPay, onPickup, onReturn, onViewReceipt }: 
           marginBottom: 2,
         }}
       >
-        {item.startDate} — {item.endDate}
+        {new Intl.DateTimeFormat(i18n.locale).format(new Date(item.startDate))} — {new Intl.DateTimeFormat(i18n.locale).format(new Date(item.endDate))}
       </Text>
 
       {/* Total */}

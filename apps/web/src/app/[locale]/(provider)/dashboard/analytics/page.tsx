@@ -80,8 +80,8 @@ export default async function AnalyticsPage({
   const maxCount = popularWithCount[0]?.bookingCount ?? 1;
 
   const cards = [
-    { label: t('revenueTotal'), value: `$${revenueTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` },
-    { label: t('revenueMTD'), value: `$${revenueMTD.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` },
+    { label: t('revenueTotal'), value: new Intl.NumberFormat(locale, { style: 'currency', currency: 'USD' }).format(revenueTotal) },
+    { label: t('revenueMTD'), value: new Intl.NumberFormat(locale, { style: 'currency', currency: 'USD' }).format(revenueMTD) },
     { label: t('bookingsCount'), value: bookingsCount.toString() },
     { label: t('activeRentals'), value: activeBookings.toString() },
     { label: t('fleetUtilization'), value: `${fleetUtilizationPct}%` },

@@ -165,7 +165,7 @@ export default async function BookingDetailPage({
         <p className="text-cr-text font-medium">{booking.vehicle.name}</p>
         <div className="flex gap-cr-lg mt-cr-sm flex-wrap text-sm text-cr-text-muted">
           <span>
-            {t('columns.dates')}: {booking.startDate} {t('dateSeparator')} {booking.endDate}
+            {t('columns.dates')}: {new Intl.DateTimeFormat(locale).format(new Date(booking.startDate))} {t('dateSeparator')} {new Intl.DateTimeFormat(locale).format(new Date(booking.endDate))}
           </span>
           <span>
             {t('columns.plan')}: {t(`plan.${booking.plan}`)}
@@ -191,21 +191,21 @@ export default async function BookingDetailPage({
         <dl className="grid grid-cols-2 gap-x-cr-lg gap-y-cr-xs text-sm">
           <dt className="text-cr-text-muted">{t('detail.baseAmount')}</dt>
           <dd className="text-cr-text text-end">
-            {booking.currency} {booking.baseAmount.toFixed(2)}
+            {new Intl.NumberFormat(locale, { style: 'currency', currency: booking.currency }).format(booking.baseAmount)}
           </dd>
           <dt className="text-cr-text-muted">{t('detail.tax')}</dt>
           <dd className="text-cr-text text-end">
-            {booking.currency} {booking.taxAmount.toFixed(2)}
+            {new Intl.NumberFormat(locale, { style: 'currency', currency: booking.currency }).format(booking.taxAmount)}
           </dd>
           <dt className="text-cr-text-muted">{t('detail.serviceCharge')}</dt>
           <dd className="text-cr-text text-end">
-            {booking.currency} {booking.serviceCharge.toFixed(2)}
+            {new Intl.NumberFormat(locale, { style: 'currency', currency: booking.currency }).format(booking.serviceCharge)}
           </dd>
           <dt className="text-cr-text font-semibold border-t border-cr-border pt-cr-xs">
             {t('detail.total')}
           </dt>
           <dd className="text-cr-text font-semibold text-end border-t border-cr-border pt-cr-xs">
-            {booking.currency} {booking.totalAmount.toFixed(2)}
+            {new Intl.NumberFormat(locale, { style: 'currency', currency: booking.currency }).format(booking.totalAmount)}
           </dd>
         </dl>
       </section>
@@ -219,7 +219,7 @@ export default async function BookingDetailPage({
           <dl className="grid grid-cols-2 gap-x-cr-lg gap-y-cr-xs text-sm">
             <dt className="text-cr-text-muted">{t('detail.paymentAmount')}</dt>
             <dd className="text-cr-text text-end font-semibold">
-              {booking.payment.currency} {booking.payment.amount.toFixed(2)}
+              {new Intl.NumberFormat(locale, { style: 'currency', currency: booking.payment.currency }).format(booking.payment.amount)}
             </dd>
             <dt className="text-cr-text-muted">{t('detail.paymentMethod')}</dt>
             <dd className="text-cr-text text-end capitalize">
@@ -291,7 +291,7 @@ export default async function BookingDetailPage({
             )}
             <dt className="text-cr-text-muted">{t('inspection.inspectedAt')}</dt>
             <dd className="text-cr-text text-end">
-              {new Date(completedInspection.inspectedAt).toLocaleString()}
+              {new Date(completedInspection.inspectedAt).toLocaleString(locale)}
             </dd>
           </dl>
         </section>

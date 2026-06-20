@@ -39,7 +39,7 @@ export default async function StaffPage({
 
   return (
     <main className="ps-cr-lg pe-cr-lg pt-cr-lg pb-cr-xl">
-      <StaffClient initialStaff={staff} />
+      <StaffClient initialStaff={staff} locale={locale} />
     </main>
   );
 }

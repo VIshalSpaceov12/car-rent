@@ -278,3 +278,28 @@ export async function listSupportTickets(): Promise<SupportTicketDTO[]> {
   const res = await authedFetch('/api/support');
   return res.ok ? ((await res.json()) as SupportTicketDTO[]) : [];
 }
+
+// ---- Branding ---------------------------------------------------------------
+
+export interface BrandingDTO {
+  name: string;
+  primary: string;
+  primaryDark: string;
+  logoUrl: string | null;
+}
+
+/**
+ * Fetches the active provider's branding config.
+ * Public endpoint — no auth token required.
+ * Returns null on network error or non-2xx.
+ */
+export async function getBranding(): Promise<BrandingDTO | null> {
+  try {
+    const res = await fetch(`${BASE}/api/branding`, {
+      headers: { 'content-type': 'application/json' },
+    });
+    return res.ok ? ((await res.json()) as BrandingDTO) : null;
+  } catch {
+    return null;
+  }
+}

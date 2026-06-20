@@ -13,6 +13,7 @@ interface StaffMember {
 
 interface Props {
   initialStaff: StaffMember[];
+  locale: string;
 }
 
 function randomPassword(len = 12): string {
@@ -20,7 +21,7 @@ function randomPassword(len = 12): string {
   return Array.from({ length: len }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
 }
 
-export function StaffClient({ initialStaff }: Props) {
+export function StaffClient({ initialStaff, locale }: Props) {
   const t = useTranslations('staff');
   const [staff, setStaff] = useState<StaffMember[]>(initialStaff);
   const [showForm, setShowForm] = useState(false);
@@ -175,7 +176,7 @@ export function StaffClient({ initialStaff }: Props) {
                   <td className="px-cr-md py-cr-sm font-medium text-cr-text">{s.name}</td>
                   <td className="px-cr-md py-cr-sm text-cr-text-muted">{s.email}</td>
                   <td className="px-cr-md py-cr-sm text-cr-text-muted">
-                    {new Date(s.createdAt).toLocaleDateString()}
+                    {new Date(s.createdAt).toLocaleDateString(locale)}
                   </td>
                   <td className="px-cr-md py-cr-sm">
                     <button

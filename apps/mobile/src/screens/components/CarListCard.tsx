@@ -2,6 +2,7 @@ import { View, Text, Pressable, StyleSheet, Image } from 'react-native';
 import { useTheme } from '@car-rental/tokens';
 import type { VehicleDTO } from '@car-rental/types';
 import { i18n } from '@/i18n';
+import { useReduceMotion } from '@/theme/useReduceMotion';
 
 type Props = {
   vehicle: VehicleDTO;
@@ -10,6 +11,7 @@ type Props = {
 
 export function CarListCard({ vehicle, onPress }: Props) {
   const theme = useTheme();
+  const reduceMotion = useReduceMotion();
 
   return (
     <Pressable
@@ -20,7 +22,8 @@ export function CarListCard({ vehicle, onPress }: Props) {
           backgroundColor: theme.color.surface,
           borderRadius: theme.radius.card,
           borderColor: theme.color.border,
-          opacity: pressed ? 0.9 : 1,
+          // Skip press opacity feedback when reduce-motion is enabled
+          opacity: !reduceMotion && pressed ? 0.9 : 1,
           ...theme.elevation.sm,
         },
       ]}

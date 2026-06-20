@@ -120,7 +120,7 @@ export default async function PaymentsPage({
                       <p className="text-cr-text-muted text-xs">{customerEmail}</p>
                     </td>
                     <td className="px-cr-md py-cr-sm text-cr-text font-semibold">
-                      {dto.currency} {dto.amount.toFixed(2)}
+                      {new Intl.NumberFormat(locale, { style: 'currency', currency: dto.currency }).format(dto.amount)}
                     </td>
                     <td className="px-cr-md py-cr-sm text-cr-text-muted capitalize">
                       {t(`method.${dto.method}`)}
@@ -132,7 +132,7 @@ export default async function PaymentsPage({
                       />
                     </td>
                     <td className="px-cr-md py-cr-sm text-cr-text-muted whitespace-nowrap">
-                      {new Date(dto.createdAt).toLocaleDateString()}
+                      {new Date(dto.createdAt).toLocaleDateString(locale)}
                     </td>
                     <td className="px-cr-md py-cr-sm">
                       {isPaid && (

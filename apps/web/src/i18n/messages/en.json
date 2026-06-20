@@ -19,7 +19,8 @@
       "discounts": "Discounts",
       "staff": "Staff",
       "customers": "Customers",
-      "support": "Support"
+      "support": "Support",
+      "branding": "Brand colors"
     }
   },
   "admin": {
@@ -27,6 +28,7 @@
     "soon": "All-tenant oversight lands in Phase 7.",
     "providers": {
       "title": "Providers",
+      "backToProviders": "← Back to providers",
       "onboard": "Onboard provider",
       "noProviders": "No providers yet.",
       "columns": {
@@ -74,6 +76,7 @@
       "revenueTotal": "Total revenue",
       "activeRentals": "Active rentals",
       "topProviders": "Top providers",
+      "noTopProviders": "No provider data yet.",
       "bookings": "bookings"
     },
     "settings": {
@@ -89,6 +92,7 @@
   },
   "fleet": {
     "title": "Fleet",
+    "backToFleet": "← Back to fleet",
     "addVehicle": "Add vehicle",
     "noVehicles": "No vehicles yet.",
     "columns": {
@@ -439,6 +443,17 @@
       "cancel": "Cancel",
       "errorSave": "Failed to save. Check your inputs."
     }
+  },
+  "branding": {
+    "title": "Brand colors",
+    "subtitle": "Customize your provider brand. Changes apply immediately on next page load.",
+    "primaryColor": "Primary color",
+    "primaryDarkColor": "Primary dark color",
+    "preview": "Preview",
+    "save": "Save",
+    "saving": "Saving…",
+    "saved": "Saved",
+    "errorSave": "Failed to save. Check your inputs."
   },
   "branches": {
     "title": "Branches",

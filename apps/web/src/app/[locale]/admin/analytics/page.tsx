@@ -77,7 +77,7 @@ export default async function AdminAnalyticsPage({
     { label: t('bookingsTotal'), value: bookingsTotal.toString() },
     {
       label: t('revenueTotal'),
-      value: `$${revenueTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+      value: new Intl.NumberFormat(locale, { style: 'currency', currency: 'USD' }).format(revenueTotal),
     },
     { label: t('activeRentals'), value: activeRentals.toString() },
   ];
@@ -103,7 +103,7 @@ export default async function AdminAnalyticsPage({
       <div className="rounded-cr-card border border-cr-border bg-cr-surface p-cr-md">
         <h2 className="text-base font-semibold text-cr-text mb-cr-md">{t('topProviders')}</h2>
         {topProviders.length === 0 ? (
-          <p className="text-cr-text-muted text-sm">{t('topProviders')}</p>
+          <p className="text-cr-text-muted text-sm">{t('noTopProviders')}</p>
         ) : (
           <div className="flex flex-col gap-cr-sm">
             {topProviders.map((p) => {
@@ -129,8 +129,8 @@ export default async function AdminAnalyticsPage({
                     />
                   </div>
                   <span className="text-xs text-cr-text-muted shrink-0">
-                    {p.bookingsCount} {t('bookings')} · $
-                    {p.revenue.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                    {p.bookingsCount} {t('bookings')} ·{' '}
+                    {new Intl.NumberFormat(locale, { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(p.revenue)}
                   </span>
                 </div>
               );

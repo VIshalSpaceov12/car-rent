@@ -55,7 +55,7 @@ export default async function SupportTicketPage({
           />
         </div>
         <p className="text-xs text-cr-text-muted mb-cr-sm">
-          {ticket.user.name} · {ticket.user.email} · {new Date(ticket.createdAt).toLocaleString()}
+          {ticket.user.name} · {ticket.user.email} · {new Date(ticket.createdAt).toLocaleString(locale)}
         </p>
         <p className="text-sm text-cr-text whitespace-pre-wrap">{ticket.body}</p>
       </div>
