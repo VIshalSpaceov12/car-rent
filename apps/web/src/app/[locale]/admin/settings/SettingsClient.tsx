@@ -94,7 +94,7 @@ export function SettingsClient({ initial }: Props) {
       {error && <p className="text-cr-danger text-sm">{error}</p>}
       {saved && (
         <p className="text-xs font-semibold" style={{ color: 'var(--color-success)' }}>
-          ✓ Saved
+          {t('saved')}
         </p>
       )}
 

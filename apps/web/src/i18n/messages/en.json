@@ -58,7 +58,12 @@
         "cancel": "Cancel",
         "errorSave": "Failed to create. Check your inputs.",
         "errorSlugTaken": "Slug is already taken.",
-        "errorEmailTaken": "Email is already in use."
+        "errorEmailTaken": "Email is already in use.",
+        "primaryColor": "Primary color",
+        "primaryDarkColor": "Primary dark color",
+        "defaultLocale": "Default locale",
+        "createdSlug": "Slug",
+        "createdStatus": "Status"
       }
     },
     "analytics": {
@@ -78,7 +83,8 @@
       "defaultLocale": "Default locale",
       "save": "Save",
       "saving": "Saving…",
-      "errorSave": "Failed to save. Check your inputs."
+      "errorSave": "Failed to save. Check your inputs.",
+      "saved": "Saved"
     }
   },
   "fleet": {

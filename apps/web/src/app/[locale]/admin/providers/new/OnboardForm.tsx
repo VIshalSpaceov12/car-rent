@@ -85,10 +85,10 @@ export function OnboardForm({ locale }: Props) {
       <div className="rounded-cr-card border border-cr-border bg-cr-surface p-cr-lg max-w-lg">
         <h2 className="text-lg font-bold text-cr-primary mb-cr-sm">{created.name}</h2>
         <p className="text-sm text-cr-text-muted mb-cr-xs">
-          slug: <span className="font-mono text-cr-text">{created.slug}</span>
+          {t('form.createdSlug')}: <span className="font-mono text-cr-text">{created.slug}</span>
         </p>
         <p className="text-sm text-cr-text-muted mb-cr-lg">
-          status: <span className="font-semibold text-cr-text">{created.status}</span>
+          {t('form.createdStatus')}: <span className="font-semibold text-cr-text">{created.status}</span>
         </p>
         <a
           href={`/${locale}/admin/providers`}
@@ -131,7 +131,7 @@ export function OnboardForm({ locale }: Props) {
 
       <div className="flex gap-cr-md">
         <div className="flex flex-col gap-cr-xs flex-1">
-          <label className="text-sm font-medium text-cr-text">Primary color</label>
+          <label className="text-sm font-medium text-cr-text">{t('form.primaryColor')}</label>
           <input
             type="color"
             value={primaryColor}
@@ -140,7 +140,7 @@ export function OnboardForm({ locale }: Props) {
           />
         </div>
         <div className="flex flex-col gap-cr-xs flex-1">
-          <label className="text-sm font-medium text-cr-text">Primary dark color</label>
+          <label className="text-sm font-medium text-cr-text">{t('form.primaryDarkColor')}</label>
           <input
             type="color"
             value={primaryDarkColor}
@@ -151,7 +151,7 @@ export function OnboardForm({ locale }: Props) {
       </div>
 
       <div className="flex flex-col gap-cr-xs">
-        <label className="text-sm font-medium text-cr-text">Default locale</label>
+        <label className="text-sm font-medium text-cr-text">{t('form.defaultLocale')}</label>
         <select
           value={defaultLocale}
           onChange={(e) => setDefaultLocale(e.target.value as 'EN' | 'AR')}

@@ -58,7 +58,12 @@
         "cancel": "إلغاء",
         "errorSave": "فشل الإنشاء. تحقق من المدخلات.",
         "errorSlugTaken": "المعرف مستخدم بالفعل.",
-        "errorEmailTaken": "البريد الإلكتروني مستخدم بالفعل."
+        "errorEmailTaken": "البريد الإلكتروني مستخدم بالفعل.",
+        "primaryColor": "اللون الأساسي",
+        "primaryDarkColor": "اللون الأساسي الداكن",
+        "defaultLocale": "اللغة الافتراضية",
+        "createdSlug": "المعرف",
+        "createdStatus": "الحالة"
       }
     },
     "analytics": {
@@ -78,7 +83,8 @@
       "defaultLocale": "اللغة الافتراضية",
       "save": "حفظ",
       "saving": "جارٍ الحفظ…",
-      "errorSave": "فشل الحفظ. تحقق من المدخلات."
+      "errorSave": "فشل الحفظ. تحقق من المدخلات.",
+      "saved": "تم الحفظ"
     }
   },
   "fleet": {
