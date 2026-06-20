@@ -20,7 +20,7 @@ import type {
 } from '@car-rental/types';
 import { getToken } from '@/auth/storage';
 
-const BASE = process.env.EXPO_PUBLIC_API_BASE_URL ?? 'http://localhost:3000';
+const BASE = process.env.EXPO_PUBLIC_API_BASE_URL ?? 'http://localhost:6001';
 
 async function authedFetch(path: string, init: RequestInit = {}) {
   const token = await getToken();

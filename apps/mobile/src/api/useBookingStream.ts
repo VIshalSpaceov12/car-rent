@@ -24,7 +24,7 @@ import { parseBookingStatusEvent } from './parseBookingStatusEvent';
 
 export type { BookingStatusEventPayload } from './parseBookingStatusEvent';
 
-const BASE = process.env.EXPO_PUBLIC_API_BASE_URL ?? 'http://localhost:3000';
+const BASE = process.env.EXPO_PUBLIC_API_BASE_URL ?? 'http://localhost:6001';
 
 interface UseBookingStreamOptions {
   onStatusChange: (bookingId: string, status: BookingStatus) => void;
